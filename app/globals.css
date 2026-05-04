@@ -46,9 +46,11 @@ body, body * {
 .border-fg-12 { border-color: rgba(244, 242, 238, 0.12); }
 
 /* Background wordmark — sized fluidly so O'MALLEY fits the viewport at every
-   width. The mobile override below shrinks the floor and tightens spacing
-   because the desktop clamp's 120px minimum + -0.045em tracking overflows
-   the second line on phones (the L-onward portion of O'MALLEY clips). */
+   width. Three steps: desktop (default, > 1024px), tablet (641–1024px),
+   and mobile (≤ 640px). Each step tightens tracking and lowers the vw
+   factor enough that O'MALLEY clears its line-box at the smallest width
+   in that range, while still reading as a monumental wordmark relative
+   to the viewport. */
 .bg-wordmark {
   position: fixed;
   left: 32px;
@@ -68,14 +70,20 @@ body, body * {
   text-align: left;
   user-select: none;
 }
+@media (min-width: 641px) and (max-width: 1024px) {
+  .bg-wordmark-text {
+    font-size: clamp(120px, 20vw, 220px);
+    letter-spacing: -0.05em;
+  }
+}
 @media (max-width: 640px) {
   .bg-wordmark {
     left: 16px;
     right: 16px;
   }
   .bg-wordmark-text {
-    font-size: clamp(56px, 18vw, 110px);
-    letter-spacing: -0.05em;
+    font-size: clamp(64px, 20vw, 130px);
+    letter-spacing: -0.06em;
   }
 }
 
