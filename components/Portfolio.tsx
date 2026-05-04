@@ -22,10 +22,13 @@ import ProjectList from './ProjectList';
  * scrolls UP and OVER it. The wordmark stays anchored at the bottom and
  * sits behind the 3D, giving the trash bin a typographic foundation.
  */
+const SCANS = ['/scans/trash_001.glb', '/scans/rocks.glb'];
+
 export default function Portfolio() {
   const [stats, setStats] = useState({ fps: 0, tris: 0 });
   const [coords, setCoords] = useState({ x: '0.000', y: '0.000', z: '0.000' });
   const [scanActive, setScanActive] = useState(false);
+  const [scanPath] = useState(() => SCANS[Math.floor(Math.random() * SCANS.length)]);
 
   // Memoize callbacks so Scene3D's effect doesn't re-fire on every render
   const onStats = useCallback((s: typeof stats) => setStats(s), []);
@@ -48,7 +51,7 @@ export default function Portfolio() {
         }}
       >
         <Scene3D
-          scanPath="/scans/trash_001.glb"
+          scanPath={scanPath}
           onStats={onStats}
           onCoords={onCoords}
           onScanActive={onScanActive}
@@ -56,7 +59,7 @@ export default function Portfolio() {
 
         {/* Bottom corner readouts pinned to viewport */}
         <div className="absolute bottom-5 left-8 mono text-[10px] tracking-wider pointer-events-none">
-          <span className="text-accent-85">asset_001.glb</span>
+          <span className="text-accent-85">{scanPath.split('/').pop()}</span>
           <span className="text-accent-35 ml-2">/ photogrammetry / textured</span>
           {scanActive && <span className="text-accent ml-3 scan-indicator-active">[ scanning ]</span>}
         </div>
