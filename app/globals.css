@@ -40,6 +40,9 @@ body, body * {
 .text-accent-55  { color: rgba(0, 255, 128, 0.55); }
 .text-accent-35  { color: rgba(0, 255, 128, 0.35); }
 
+/* Scan cyan — used only for the wireframe scan-line sweep + its HUD label */
+.text-scan { color: #00F8FF; }
+
 .border-fg-12 { border-color: rgba(244, 242, 238, 0.12); }
 
 /* Animations */

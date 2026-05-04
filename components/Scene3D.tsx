@@ -132,7 +132,7 @@ export default function Scene3D({
       uniforms: {
         uScanY: { value: 100.0 },
         uScanWidth: { value: 0.18 },
-        uColor: { value: new THREE.Color(0x00ff80) },
+        uColor: { value: new THREE.Color(0x00f8ff) },
       },
       vertexShader: /* glsl */ `
         varying vec3 vWorld;

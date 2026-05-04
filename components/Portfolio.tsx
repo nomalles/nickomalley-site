@@ -61,7 +61,7 @@ export default function Portfolio() {
         <div className="absolute bottom-5 left-8 mono text-[10px] tracking-wider pointer-events-none">
           <span className="text-accent-85">{scanPath.split('/').pop()}</span>
           <span className="text-accent-35 ml-2">/ photogrammetry / textured</span>
-          {scanActive && <span className="text-accent ml-3 scan-indicator-active">[ scanning ]</span>}
+          {scanActive && <span className="text-scan ml-3 scan-indicator-active">[ scanning ]</span>}
         </div>
 
         <div className="absolute bottom-5 right-8 mono text-[10px] tracking-wider pointer-events-none text-accent-55">

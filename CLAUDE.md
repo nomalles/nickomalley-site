@@ -55,11 +55,19 @@ The site itself is a portfolio piece. It demonstrates art direction, motion sens
 | `fg-90/70/55/45/30/15` | foreground at varying opacities | Secondary, tertiary text |
 | `accent`      | `#00FF80`                   | The brand green (AE null-object green) |
 | `accent-85/55/35` | accent at varying opacities | Subdued accent uses              |
+| `scan`        | `#00F8FF`                   | Scan-line sweep + its `[ scanning ]` HUD label only |
 
 The accent green is **load-bearing** — it should appear sparingly and
 deliberately. Right now it's used for: live time dot, FPS/triangle stats,
-scan-active state, project row hover (year), mono links on hover, the work
-indicator. Adding it elsewhere dilutes it.
+project row hover (year), mono links on hover, the work indicator. Adding
+it elsewhere dilutes it.
+
+The scan cyan is reserved for the wireframe sweep moment — the colored
+band that crosses the photogrammetry mesh every ~7.5s and the
+`[ scanning ]` HUD readout that pulses in sync. Use only there. The split
+between brand-green UI and cyan scan-state keeps the scan reading as a
+discrete diegetic event ("the tool is doing something") rather than just
+another UI accent.
 
 ### Typography
 
