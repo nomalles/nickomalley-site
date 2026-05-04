@@ -106,6 +106,12 @@ export default function Portfolio() {
         <div style={{ pointerEvents: 'auto' }}>
           <ProjectList />
         </div>
+
+        {/* Tail spacer — gives the user room to scroll past the list so the
+            list itself can move up the viewport instead of being pinned to
+            the bottom edge. Inherits pointerEvents: none from the wrapper
+            so the canvas behind it stays drag-orbit-able. */}
+        <div style={{ height: '60vh' }} aria-hidden="true" />
       </div>
     </div>
   );

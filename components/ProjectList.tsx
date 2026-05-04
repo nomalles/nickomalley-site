@@ -70,11 +70,18 @@ export default function ProjectList() {
 
       {/* List. id="work" is the scroll target for the header's Work link;
           scroll-margin-top offsets so the section lands below the fixed header
-          rather than getting tucked under it. */}
+          rather than getting tucked under it. The faint scan-cyan tint +
+          slight backdrop blur lifts the rows off the busy 3D scene behind
+          for legibility without competing with the per-row hover treatment. */}
       <section
         id="work"
         className="px-8 md:px-12 pb-16 pt-12"
-        style={{ scrollMarginTop: 90 }}
+        style={{
+          scrollMarginTop: 90,
+          backgroundColor: 'rgba(0, 248, 255, 0.06)',
+          backdropFilter: 'blur(4px)',
+          WebkitBackdropFilter: 'blur(4px)',
+        }}
       >
         <div className="mono text-[10px] tracking-[0.18em] text-fg-30 mb-6 flex justify-between uppercase">
           <span>Selected Work</span>
