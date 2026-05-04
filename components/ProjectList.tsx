@@ -13,7 +13,9 @@ import { projects, type Project } from '@/lib/projects';
  */
 export default function ProjectList() {
   const thumbRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
   const [hovered, setHovered] = useState<Project | null>(null);
+  const [inView, setInView] = useState(false);
 
   // Thumbnail follows the cursor — pure DOM transform, no React re-renders
   useEffect(() => {
@@ -28,6 +30,20 @@ export default function ProjectList() {
     };
     window.addEventListener('pointermove', handleMove);
     return () => window.removeEventListener('pointermove', handleMove);
+  }, []);
+
+  // Toggle the backdrop blur on the list only while the section is in view —
+  // hero state stays clean, blur fades in as the work scrolls into the
+  // viewport and out again as the user scrolls past it.
+  useEffect(() => {
+    const node = sectionRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
   }, []);
 
   return (
@@ -70,18 +86,15 @@ export default function ProjectList() {
 
       {/* List. id="work" is the scroll target for the header's Work link;
           scroll-margin-top offsets so the section lands below the fixed header
-          rather than getting tucked under it. The faint scan-cyan tint +
-          slight backdrop blur lifts the rows off the busy 3D scene behind
-          for legibility without competing with the per-row hover treatment. */}
+          rather than getting tucked under it. The .project-list-section class
+          carries the backdrop blur, which only kicks in once .is-visible is
+          on (gated by IntersectionObserver above) so the hero never has the
+          blur applied. */}
       <section
+        ref={sectionRef}
         id="work"
-        className="px-8 md:px-12 pb-16 pt-12"
-        style={{
-          scrollMarginTop: 90,
-          backgroundColor: 'rgba(0, 248, 255, 0.06)',
-          backdropFilter: 'blur(4px)',
-          WebkitBackdropFilter: 'blur(4px)',
-        }}
+        className={`project-list-section px-8 md:px-12 pb-16 pt-12${inView ? ' is-visible' : ''}`}
+        style={{ scrollMarginTop: 90 }}
       >
         <div className="mono text-[10px] tracking-[0.18em] text-fg-30 mb-6 flex justify-between uppercase">
           <span>Selected Work</span>
