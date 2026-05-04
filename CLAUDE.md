@@ -56,6 +56,7 @@ The site itself is a portfolio piece. It demonstrates art direction, motion sens
 | `accent`      | `#00FF80`                   | The brand green (AE null-object green) |
 | `accent-85/55/35` | accent at varying opacities | Subdued accent uses              |
 | `scan`        | `#00F8FF`                   | Scan-line sweep + its `[ scanning ]` HUD label only |
+| `hint`        | `#FF7878`                   | Touch-only gesture hint that fades after ~5s — used nowhere else |
 
 The accent green is **load-bearing** — it should appear sparingly and
 deliberately. Right now it's used for: live time dot, FPS/triangle stats,
@@ -171,6 +172,17 @@ This is the most complex component. Key facts:
 - **Object group**: mesh + wireframe + trails are all children of a single
   `THREE.Group` so user drag rotates them together. Lights and cube camera
   stay in world space.
+- **Input model**:
+  - **Mouse / pen**: single-button drag orbits.
+  - **Touch**: requires **two fingers** to orbit (midpoint of the two pointers
+    drives rotation). Single-finger touch is left to the browser for native
+    page scroll. Combined with `touch-action: pan-y` on the canvas mount,
+    this lets mobile users scroll the page over the fixed scene without
+    fighting the orbit handler. Don't simplify back to single-finger touch
+    orbit — that would re-introduce the scroll/orbit conflict on mobile.
+  - A coral (`#FF7878`) "↻ two-finger orbit" hint surfaces on touch-only
+    devices via `.touch-hint` (CSS media query `(hover: none) and
+    (pointer: coarse)`) and fades after ~5s.
 - **Wireframe scan effect**: world-space Y-band shader. Sweeps every 7.5s for
   2.2s. The active state is exposed via `onScanActive` callback for the HUD.
 - **Chrome trails**: 5 thin tubes (radius 0.013, 80-point history) with mirror

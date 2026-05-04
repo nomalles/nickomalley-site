@@ -69,16 +69,23 @@ export default function Portfolio() {
           <span className="ml-3">y {coords.y}</span>
           <span className="ml-3">z {coords.z}</span>
         </div>
+
+        {/* Touch-only gesture hint — fades after ~5s */}
+        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 mono text-[10px] tracking-[0.2em] uppercase pointer-events-none touch-hint whitespace-nowrap">
+          ↻ two-finger orbit
+        </div>
       </div>
 
       <Header fps={stats.fps} tris={stats.tris} />
 
       {/* Scrollable content layer */}
       <div style={{ position: 'relative', zIndex: 2 }}>
-        {/* Hero spacer — fills first viewport so 3D is alone, scroll cue at bottom */}
+        {/* Hero spacer — fills first viewport so 3D is alone, scroll cue at bottom.
+            pointerEvents: none lets drag-to-orbit on the 3D canvas behind work
+            through this section; native scroll still bubbles to document. */}
         <section
           className="relative flex flex-col justify-end items-center pb-12"
-          style={{ minHeight: 'calc(100vh - 90px)' }}
+          style={{ minHeight: 'calc(100vh - 90px)', pointerEvents: 'none' }}
         >
           <div className="text-center">
             <div className="mono text-[11px] text-accent tracking-[0.2em] mb-2 uppercase">work</div>

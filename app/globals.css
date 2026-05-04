@@ -58,6 +58,25 @@ body, body * {
 }
 .scan-indicator-active { animation: scan-blink 0.4s ease-in-out infinite; }
 
+/* Touch-only hint that surfaces the two-finger orbit gesture, then fades.
+   Hidden on hover-capable devices. ~5s total: quick fade in, hold, fade out. */
+.touch-hint {
+  display: none;
+  color: #FF7878;
+}
+@media (hover: none) and (pointer: coarse) {
+  .touch-hint {
+    display: block;
+    animation: touch-hint-fade 5.5s ease-in-out forwards;
+  }
+}
+@keyframes touch-hint-fade {
+  0%   { opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
 /* Project rows — minimal at rest, dark blur backdrop on hover */
 .project-row {
   background-color: transparent;

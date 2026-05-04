@@ -323,19 +323,46 @@ export default function Scene3D({
 
     // ------------------------------------------------------------------
     // Drag-to-orbit
+    //   Mouse/pen: single-button drag (1 pointer required).
+    //   Touch:     two-finger drag (2 pointers required) so single-finger
+    //              swipes are left to the browser for native scrolling.
+    //              Combined with touch-action: pan-y on the mount, this
+    //              gives mobile users predictable scroll + orbit.
     // ------------------------------------------------------------------
     let isDragging = false;
     const prev = { x: 0, y: 0 };
     let targetRotY = 0, currentRotY = 0;
     let targetRotX = 0, currentRotX = 0;
 
+    type PointerSample = { x: number; y: number; type: string };
+    const activePointers = new Map<number, PointerSample>();
+
+    const requiredPointers = (type: string) => (type === 'touch' ? 2 : 1);
+    const midpoint = () => {
+      let sx = 0, sy = 0;
+      activePointers.forEach((p) => { sx += p.x; sy += p.y; });
+      const n = Math.max(activePointers.size, 1);
+      return { x: sx / n, y: sy / n };
+    };
+
     const onDown = (e: PointerEvent) => {
-      isDragging = true;
-      prev.x = e.clientX;
-      prev.y = e.clientY;
-      mount.setPointerCapture(e.pointerId);
+      activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY, type: e.pointerType });
+      if (!isDragging && activePointers.size >= requiredPointers(e.pointerType)) {
+        isDragging = true;
+        const mid = midpoint();
+        prev.x = mid.x;
+        prev.y = mid.y;
+        // Pointer capture is great for mouse drag (continues outside canvas)
+        // but interferes with touch gesture handoff to the browser. Skip on touch.
+        if (e.pointerType !== 'touch') {
+          mount.setPointerCapture(e.pointerId);
+        }
+      }
     };
     const onMove = (e: PointerEvent) => {
+      if (activePointers.has(e.pointerId)) {
+        activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY, type: e.pointerType });
+      }
       const rect = mount.getBoundingClientRect();
       const nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
       const ny = ((e.clientY - rect.top) / rect.height - 0.5) * -2;
@@ -345,15 +372,26 @@ export default function Scene3D({
         z: (Math.sin(performance.now() * 0.001) * 0.5).toFixed(3),
       });
       if (!isDragging) return;
-      const dx = e.clientX - prev.x;
-      const dy = e.clientY - prev.y;
+      const mid = midpoint();
+      const dx = mid.x - prev.x;
+      const dy = mid.y - prev.y;
       targetRotY += dx * 0.008;
       targetRotX = Math.max(-0.7, Math.min(0.7, targetRotX + dy * 0.008));
-      prev.x = e.clientX;
-      prev.y = e.clientY;
+      prev.x = mid.x;
+      prev.y = mid.y;
     };
     const onUp = (e: PointerEvent) => {
-      isDragging = false;
+      activePointers.delete(e.pointerId);
+      if (isDragging) {
+        if (activePointers.size < requiredPointers(e.pointerType)) {
+          isDragging = false;
+        } else {
+          // Re-anchor prev to remaining pointers' midpoint to avoid a jump.
+          const mid = midpoint();
+          prev.x = mid.x;
+          prev.y = mid.y;
+        }
+      }
       try { mount.releasePointerCapture(e.pointerId); } catch {}
     };
 
@@ -508,5 +546,11 @@ export default function Scene3D({
     };
   }, [scanPath, onStats, onCoords, onScanActive]);
 
-  return <div ref={mountRef} className="absolute inset-0 overflow-hidden" style={{ pointerEvents: 'auto' }} />;
+  return (
+    <div
+      ref={mountRef}
+      className="absolute inset-0 overflow-hidden"
+      style={{ pointerEvents: 'auto', touchAction: 'pan-y' }}
+    />
+  );
 }
