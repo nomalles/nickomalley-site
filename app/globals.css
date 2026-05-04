@@ -61,7 +61,7 @@ body, body * {
   overflow: hidden;
 }
 .bg-wordmark-text {
-  font-size: clamp(120px, 22vw, 440px);
+  font-size: clamp(120px, 20vw, 440px);
   font-weight: 700;
   letter-spacing: -0.045em;
   color: #F4F2EE;
