@@ -214,6 +214,7 @@ export default function Scene3D({
         // Tone the source material to behave like a scan asset
         sourceMat.roughness = 0.85;
         sourceMat.metalness = 0.02;
+        sourceMat.envMapIntensity = 0.55;
 
         const mesh = new THREE.Mesh(baseGeo, sourceMat);
         mesh.castShadow = true;
