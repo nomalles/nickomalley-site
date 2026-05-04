@@ -4,35 +4,18 @@
  * anchored 24px above the viewport bottom so all letterforms (including the
  * descenders of L's in "MALLEY") stay fully visible.
  *
+ * Styling lives in globals.css (.bg-wordmark / .bg-wordmark-text) so that a
+ * mobile media query can shrink the type and tighten letter-spacing — the
+ * desktop clamp would otherwise hold O'MALLEY at 120px on phones where the
+ * line then can't fit and gets cut after the first L.
+ *
  * The trash bin in the 3D scene composes naturally into the gap between
  * "NICK" and "O'MALLEY".
  */
 export default function BackgroundWordmark() {
   return (
-    <div
-      aria-hidden="true"
-      style={{
-        position: 'fixed',
-        left: 32,
-        right: 32,
-        bottom: 24,
-        zIndex: 0,
-        pointerEvents: 'none',
-        overflow: 'hidden',
-      }}
-    >
-      <div
-        style={{
-          fontSize: 'clamp(120px, 22vw, 440px)',
-          fontWeight: 700,
-          letterSpacing: '-0.045em',
-          color: '#F4F2EE',
-          opacity: 0.85,
-          lineHeight: 0.85,
-          textAlign: 'left',
-          userSelect: 'none',
-        }}
-      >
+    <div aria-hidden="true" className="bg-wordmark">
+      <div className="bg-wordmark-text">
         <div>NICK</div>
         <div>O&apos;MALLEY</div>
       </div>

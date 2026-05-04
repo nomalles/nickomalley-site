@@ -45,6 +45,40 @@ body, body * {
 
 .border-fg-12 { border-color: rgba(244, 242, 238, 0.12); }
 
+/* Background wordmark — sized fluidly so O'MALLEY fits the viewport at every
+   width. The mobile override below shrinks the floor and tightens spacing
+   because the desktop clamp's 120px minimum + -0.045em tracking overflows
+   the second line on phones (the L-onward portion of O'MALLEY clips). */
+.bg-wordmark {
+  position: fixed;
+  left: 32px;
+  right: 32px;
+  bottom: 24px;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.bg-wordmark-text {
+  font-size: clamp(120px, 22vw, 440px);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  color: #F4F2EE;
+  opacity: 0.85;
+  line-height: 0.85;
+  text-align: left;
+  user-select: none;
+}
+@media (max-width: 640px) {
+  .bg-wordmark {
+    left: 16px;
+    right: 16px;
+  }
+  .bg-wordmark-text {
+    font-size: clamp(56px, 18vw, 110px);
+    letter-spacing: -0.05em;
+  }
+}
+
 /* Animations */
 @keyframes work-pulse {
   0%, 100% { transform: translateY(0); opacity: 0.55; }
