@@ -92,7 +92,7 @@ export default function Scene3D({
       (err) => console.error('HDRI load failed:', err)
     );
 
-    const key = new THREE.DirectionalLight(0xfff4e6, 0.25);
+    const key = new THREE.DirectionalLight(0xfff4e6, 0.55);
     key.position.set(2, 3.5, 3);
     key.castShadow = true;
     key.shadow.mapSize.set(2048, 2048);

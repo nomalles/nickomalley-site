@@ -164,11 +164,12 @@ This is the most complex component. Key facts:
 - **Camera**: `(0, 0.7, 4.6)` looking at origin. Slight downward tilt.
 - **Lighting**: HDRI environment lighting (`/public/hdri/forest.exr`,
   prefiltered through PMREMGenerator and assigned to `scene.environment`)
-  handles all diffuse/specular IBL. A low-intensity directional key
-  (`intensity: 0.25`) is retained solely to cast PCF soft shadows from the
-  chrome trails onto the scan. ACES filmic tone mapping with
-  `toneMappingExposure: 0.62` — tuned down from the previous non-HDRI value
-  so the photogrammetry texture doesn't blow out under IBL.
+  handles most of the diffuse/specular IBL. A directional key
+  (`intensity: 0.55`) is retained primarily for PCF shadow casting from the
+  chrome trails onto the scan — at lower intensities the HDRI fill washed
+  out the shadow contrast and trails appeared to float. ACES filmic tone
+  mapping with `toneMappingExposure: 0.62` — tuned down from the previous
+  non-HDRI value so the photogrammetry texture doesn't blow out under IBL.
 - **Object group**: mesh + wireframe + trails are all children of a single
   `THREE.Group` so user drag rotates them together. Lights and cube camera
   stay in world space.
