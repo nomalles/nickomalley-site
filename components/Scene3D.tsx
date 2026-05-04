@@ -220,15 +220,27 @@ export default function Scene3D({
         sourceMat.metalness = 0.02;
         sourceMat.envMapIntensity = 0.25;
 
-        // Saturation boost via shader injection: photogrammetry texture
-        // tends to read flat under IBL, so push chroma without touching
-        // tone mapping (which would also affect the chrome trails).
+        // Shader injection on the scan material:
+        //   1. Saturation boost — photogrammetry reads flat under IBL, so push
+        //      chroma without touching tone mapping (which would also affect
+        //      the chrome trails).
+        //   2. Shadow-aware IBL attenuation — three.js shadows only darken
+        //      direct-light contribution. With HDRI as the dominant source,
+        //      that's not enough: shadowed pixels still get full IBL fill and
+        //      the shadow disappears. Compute the directional light's shadow
+        //      factor and use it to scale reflectedLight.indirectDiffuse /
+        //      indirectSpecular too, so trail shadows actually read on the
+        //      scan surface. uShadowedEnvAmount = how much IBL survives in
+        //      fully shadowed pixels (1.0 = no extra darkening, 0.0 = pitch).
         sourceMat.onBeforeCompile = (shader) => {
           shader.uniforms.uSaturation = { value: 1.3 };
+          shader.uniforms.uShadowedEnvAmount = { value: 0.4 };
           shader.fragmentShader = shader.fragmentShader
             .replace(
               '#include <common>',
-              '#include <common>\nuniform float uSaturation;'
+              `#include <common>
+              uniform float uSaturation;
+              uniform float uShadowedEnvAmount;`
             )
             .replace(
               '#include <color_fragment>',
@@ -237,6 +249,25 @@ export default function Scene3D({
                 float _luma = dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));
                 diffuseColor.rgb = mix(vec3(_luma), diffuseColor.rgb, uSaturation);
               }`
+            )
+            .replace(
+              '#include <aomap_fragment>',
+              `#include <aomap_fragment>
+              #if defined(USE_SHADOWMAP) && NUM_DIR_LIGHT_SHADOWS > 0
+                {
+                  DirectionalLightShadow _ds = directionalLightShadows[ 0 ];
+                  float _shadowF = getShadow(
+                    directionalShadowMap[ 0 ],
+                    _ds.shadowMapSize,
+                    _ds.shadowBias,
+                    _ds.shadowRadius,
+                    vDirectionalShadowCoord[ 0 ]
+                  );
+                  float _atten = mix(uShadowedEnvAmount, 1.0, _shadowF);
+                  reflectedLight.indirectDiffuse  *= _atten;
+                  reflectedLight.indirectSpecular *= _atten;
+                }
+              #endif`
             );
         };
 

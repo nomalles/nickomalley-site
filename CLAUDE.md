@@ -181,7 +181,19 @@ This is the most complex component. Key facts:
   (~0.013 unit radius) trails into invisibility, hence radius 2.
   `key.target` is explicitly added to the scene so its world matrix
   stays current each frame; without that the shadow camera direction
-  can lag. ACES filmic tone
+  can lag.
+
+  **Shadow-aware IBL attenuation (shader injection).** Three.js shadows
+  only attenuate *direct* light. Under a bright HDRI, shadowed pixels
+  still get full IBL fill and the shadow visually disappears no matter
+  how the value knobs are tuned. Scene3D works around this by hooking
+  the scan material's fragment shader (`onBeforeCompile`) to also
+  attenuate `reflectedLight.indirectDiffuse` and `indirectSpecular` by
+  the directional light's shadow factor. The strength is exposed as
+  the `uShadowedEnvAmount` uniform — `1.0` = no extra darkening,
+  `0.0` = pitch black in shadow. Currently `0.4`. This is what makes
+  the trail shadows read; removing the injection brings them back to
+  invisible regardless of `key.intensity`. ACES filmic tone
   mapping with `toneMappingExposure: 0.62` — tuned down from the previous
   non-HDRI value so the photogrammetry texture doesn't blow out under IBL.
 - **Object group**: mesh + wireframe + trails are all children of a single
