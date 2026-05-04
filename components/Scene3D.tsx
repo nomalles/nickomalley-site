@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
 
 type Stats = { fps: number; tris: number };
 type Coords = { x: string; y: string; z: string };
@@ -24,7 +25,9 @@ export type Scene3DProps = {
  *   - Animated wireframe scan-line sweep with a custom shader
  *   - 5 chrome ribbon trails wandering & curving around the object
  *   - Real-time scene reflections via WebGLCubeRenderTarget
- *   - Soft hemisphere + key light with PCF shadows from trails onto the scan
+ *   - HDRI environment lighting (forest.exr) via PMREMGenerator, with a
+ *     low-intensity directional light retained purely to cast PCF shadows
+ *     from the trails onto the scan
  *   - ACES filmic tone mapping
  *
  * The whole "object world" (mesh + wireframe + trails) lives in a single
@@ -56,7 +59,7 @@ export default function Scene3D({
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 0.95;
+    renderer.toneMappingExposure = 0.62;
     if ('outputColorSpace' in renderer && THREE.SRGBColorSpace !== undefined) {
       renderer.outputColorSpace = THREE.SRGBColorSpace;
     }
@@ -68,12 +71,28 @@ export default function Scene3D({
     camera.lookAt(0, 0, 0);
 
     // ------------------------------------------------------------------
-    // Lighting — soft, naturalistic. Key light casts shadows so trails
-    // ground onto the scan surface.
+    // Lighting — HDRI handles all diffuse/specular IBL. The directional
+    // light is retained solely so the chrome trails cast PCF shadows onto
+    // the scan; its intensity is kept low so it doesn't fight the HDRI.
     // ------------------------------------------------------------------
-    scene.add(new THREE.HemisphereLight(0xe8eaf0, 0x2a2620, 0.7));
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    pmrem.compileEquirectangularShader();
 
-    const key = new THREE.DirectionalLight(0xfff4e6, 0.85);
+    let envRT: THREE.WebGLRenderTarget | null = null;
+    new EXRLoader().load(
+      '/hdri/forest.exr',
+      (texture) => {
+        texture.mapping = THREE.EquirectangularReflectionMapping;
+        envRT = pmrem.fromEquirectangular(texture);
+        scene.environment = envRT.texture;
+        texture.dispose();
+        pmrem.dispose();
+      },
+      undefined,
+      (err) => console.error('HDRI load failed:', err)
+    );
+
+    const key = new THREE.DirectionalLight(0xfff4e6, 0.25);
     key.position.set(2, 3.5, 3);
     key.castShadow = true;
     key.shadow.mapSize.set(2048, 2048);
@@ -87,8 +106,6 @@ export default function Scene3D({
     key.shadow.normalBias = 0.02;
     key.shadow.radius = 4;
     scene.add(key);
-
-    scene.add(new THREE.AmbientLight(0xffffff, 0.18));
 
     // ------------------------------------------------------------------
     // Cube camera for chrome reflections (captures live scene every 3 frames)
@@ -464,6 +481,8 @@ export default function Scene3D({
       });
       cubeRenderTarget.dispose();
       scanMat.dispose();
+      if (envRT) envRT.dispose();
+      scene.environment = null;
       renderer.dispose();
     };
   }, [scanPath, onStats, onCoords, onScanActive]);

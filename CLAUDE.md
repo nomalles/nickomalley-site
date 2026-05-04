@@ -153,9 +153,13 @@ This is the most complex component. Key facts:
 - Uses the source GLB's textured material (don't replace with plain gray —
   the texture is essential for the photogrammetry to read as real)
 - **Camera**: `(0, 0.7, 4.6)` looking at origin. Slight downward tilt.
-- **Lighting**: Hemisphere (cool sky + warm ground) + directional key with PCF
-  soft shadows + tiny ambient lift. ACES filmic tone mapping. Tuned to NOT
-  fight the baked photogrammetry lighting in the texture.
+- **Lighting**: HDRI environment lighting (`/public/hdri/forest.exr`,
+  prefiltered through PMREMGenerator and assigned to `scene.environment`)
+  handles all diffuse/specular IBL. A low-intensity directional key
+  (`intensity: 0.25`) is retained solely to cast PCF soft shadows from the
+  chrome trails onto the scan. ACES filmic tone mapping with
+  `toneMappingExposure: 0.62` — tuned down from the previous non-HDRI value
+  so the photogrammetry texture doesn't blow out under IBL.
 - **Object group**: mesh + wireframe + trails are all children of a single
   `THREE.Group` so user drag rotates them together. Lights and cube camera
   stay in world space.
@@ -228,7 +232,6 @@ These came up in conversation and were rejected. Don't re-suggest:
 - ❌ Selection bracket corner indicators on hover
 - ❌ Smooth scroll / Lenis
 - ❌ "American in EU" tagline (replaced with "Based in Salzburg")
-- ❌ HDRI for lighting (current hemisphere + key setup is preferred)
 
 ## Things to ask before doing
 
