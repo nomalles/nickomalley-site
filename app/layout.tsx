@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { IBM_Plex_Sans, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
 
@@ -15,6 +15,18 @@ const plexMono = IBM_Plex_Mono({
   variable: '--font-plex-mono',
   display: 'swap',
 });
+
+// Disabling user-scalable is required for the canvas's two-finger orbit to
+// fire on iOS — viewport pinch-zoom is a system-level gesture that runs
+// below the JS layer, so element-level touch-action / preventDefault can't
+// stop it. If/when long-form text pages are added (case studies, /info),
+// consider overriding this per-page so users can still zoom for legibility.
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 export const metadata: Metadata = {
   title: "Nick O'Malley — Art Director, Motion Designer, 3D",

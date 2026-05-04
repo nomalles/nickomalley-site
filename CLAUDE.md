@@ -182,9 +182,13 @@ This is the most complex component. Key facts:
     orbit — that would re-introduce the scroll/orbit conflict on mobile.
     Pinch-zoom is also explicitly blocked on the canvas via
     `touchstart`/`touchmove` `preventDefault` (`{ passive: false }`) plus
-    Safari's `gesturestart`/`change`/`end` events, because `touch-action:
-    pan-y` alone doesn't stop iOS Safari's viewport pinch. Don't remove
-    these without re-testing on iOS.
+    Safari's `gesturestart`/`change`/`end` events. **And** the site-wide
+    `viewport` export in `app/layout.tsx` sets `maximumScale: 1` and
+    `userScalable: false` — without that, iOS handles pinch at the system
+    level (below the JS layer) and the two-finger orbit never fires. If
+    long-form text pages are added later (case studies, `/info`), consider
+    overriding the viewport per-page to re-enable pinch-zoom for
+    accessibility on those routes.
   - A coral (`#FF7878`) "↻ two-finger orbit" hint surfaces on touch-only
     devices via `.touch-hint` (CSS media query `(hover: none) and
     (pointer: coarse)`) and fades after ~5s.
