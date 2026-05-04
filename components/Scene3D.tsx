@@ -92,7 +92,7 @@ export default function Scene3D({
       (err) => console.error('HDRI load failed:', err)
     );
 
-    const key = new THREE.DirectionalLight(0xfff4e6, 1.0);
+    const key = new THREE.DirectionalLight(0xfff4e6, 0.85);
     key.position.set(2, 3.5, 3);
     key.castShadow = true;
     key.shadow.mapSize.set(2048, 2048);
@@ -218,7 +218,7 @@ export default function Scene3D({
         // Tone the source material to behave like a scan asset
         sourceMat.roughness = 0.85;
         sourceMat.metalness = 0.02;
-        sourceMat.envMapIntensity = 0.55;
+        sourceMat.envMapIntensity = 0.4;
 
         // Saturation boost via shader injection: photogrammetry texture
         // tends to read flat under IBL, so push chroma without touching
