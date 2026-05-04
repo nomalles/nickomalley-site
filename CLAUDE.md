@@ -165,9 +165,13 @@ This is the most complex component. Key facts:
 - **Lighting**: HDRI environment lighting (`/public/hdri/forest.exr`,
   prefiltered through PMREMGenerator and assigned to `scene.environment`)
   handles most of the diffuse/specular IBL. A directional key
-  (`intensity: 0.55`) is retained primarily for PCF shadow casting from the
-  chrome trails onto the scan — at lower intensities the HDRI fill washed
-  out the shadow contrast and trails appeared to float. ACES filmic tone
+  (`intensity: 1.0`, `shadow.radius: 2`) is retained primarily for PCF
+  shadow casting from the chrome trails onto the scan — at lower
+  intensities the HDRI's HDR-unit fill washed out the shadow contrast,
+  and at wider PCF radii the soft penumbra eroded the shadow of the
+  thin (~0.013 unit radius) trails into invisibility. `key.target` is
+  explicitly added to the scene so its world matrix stays current each
+  frame; without that the shadow camera direction can lag. ACES filmic tone
   mapping with `toneMappingExposure: 0.62` — tuned down from the previous
   non-HDRI value so the photogrammetry texture doesn't blow out under IBL.
 - **Object group**: mesh + wireframe + trails are all children of a single

@@ -92,7 +92,7 @@ export default function Scene3D({
       (err) => console.error('HDRI load failed:', err)
     );
 
-    const key = new THREE.DirectionalLight(0xfff4e6, 0.55);
+    const key = new THREE.DirectionalLight(0xfff4e6, 1.0);
     key.position.set(2, 3.5, 3);
     key.castShadow = true;
     key.shadow.mapSize.set(2048, 2048);
@@ -104,8 +104,12 @@ export default function Scene3D({
     key.shadow.camera.bottom = -2.4;
     key.shadow.bias = -0.0006;
     key.shadow.normalBias = 0.02;
-    key.shadow.radius = 4;
+    key.shadow.radius = 2;
     scene.add(key);
+    // Add the target so its world matrix updates each frame; without this
+    // the shadow camera direction can lag and drop shadow casting in some
+    // render paths.
+    scene.add(key.target);
 
     // ------------------------------------------------------------------
     // Cube camera for chrome reflections (captures live scene every 3 frames)
