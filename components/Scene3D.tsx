@@ -59,7 +59,7 @@ export default function Scene3D({
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 0.62;
+    renderer.toneMappingExposure = 0.5;
     if ('outputColorSpace' in renderer && THREE.SRGBColorSpace !== undefined) {
       renderer.outputColorSpace = THREE.SRGBColorSpace;
     }
@@ -218,7 +218,7 @@ export default function Scene3D({
         // Tone the source material to behave like a scan asset
         sourceMat.roughness = 0.85;
         sourceMat.metalness = 0.02;
-        sourceMat.envMapIntensity = 0.4;
+        sourceMat.envMapIntensity = 0.25;
 
         // Saturation boost via shader injection: photogrammetry texture
         // tends to read flat under IBL, so push chroma without touching
