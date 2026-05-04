@@ -1,0 +1,111 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
+
+type HeaderProps = {
+  fps: number;
+  tris: number;
+};
+
+/**
+ * Fixed top header — locked above scroll. Carries:
+ *   Left:  role line, location, avatar art
+ *   Right: live time + render stats + contact links + version footer info
+ *
+ * The big "NICK O'MALLEY" wordmark is rendered separately as a background
+ * element (BackgroundWordmark) so it can sit BEHIND the 3D scene.
+ */
+export default function Header({ fps, tris }: HeaderProps) {
+  const [time, setTime] = useState('—:—');
+
+  // Live Salzburg time (Europe/Vienna covers all of Austria)
+  useEffect(() => {
+    const update = () => {
+      try {
+        const fmt = new Intl.DateTimeFormat('en-GB', {
+          timeZone: 'Europe/Vienna',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        });
+        setTime(fmt.format(new Date()));
+      } catch {
+        setTime('—:—');
+      }
+    };
+    update();
+    const id = setInterval(update, 30_000);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 50,
+        padding: '24px 32px',
+        pointerEvents: 'none', // canvas drag passes through; nested elements opt back in
+      }}
+    >
+      <div className="flex justify-between items-start">
+        {/* LEFT — role, location, avatar */}
+        <div className="leading-none">
+          <div className="text-fg-70" style={{ fontSize: 13, letterSpacing: '0.01em' }}>
+            Art Director · Motion Designer · 3D
+          </div>
+          <div className="text-fg-45" style={{ fontSize: 11, marginTop: 4 }}>
+            Based in Salzburg
+          </div>
+          <div style={{ marginTop: 14 }}>
+            <Image
+              src="/avatar/avatar.png"
+              alt=""
+              width={64}
+              height={64}
+              priority
+              style={{ display: 'block', pointerEvents: 'none' }}
+            />
+          </div>
+        </div>
+
+        {/* RIGHT — info column */}
+        <div
+          className="mono text-right"
+          style={{ fontSize: 10, letterSpacing: '0.04em', lineHeight: 1.7, pointerEvents: 'auto' }}
+        >
+          <div className="flex items-center gap-2 justify-end text-fg-70">
+            <span
+              className="w-[6px] h-[6px] rounded-full glow-dot inline-block"
+              style={{ backgroundColor: '#00FF80' }}
+            />
+            <span>SZG {time} CET</span>
+          </div>
+
+          <div className="text-accent-85" style={{ marginTop: 6 }}>
+            {fps} fps · {tris.toLocaleString()} tris
+          </div>
+          <div className="text-accent-35">webgl · photogrammetry · 1k texture</div>
+
+          <div style={{ height: 20 }} />
+
+          <a href="mailto:nick@nickomalley.net" className="text-fg-70 hover-accent block">
+            nick@nickomalley.net
+          </a>
+          <a href="https://www.linkedin.com/" className="text-fg-55 hover-accent block">LinkedIn</a>
+          <a href="https://www.instagram.com/" className="text-fg-55 hover-accent block">Instagram</a>
+          <a href="/scraps" className="text-fg-55 hover-accent block">Scraps</a>
+          <a href="/info" className="text-fg-55 hover-accent block">Info</a>
+
+          <div style={{ height: 20 }} />
+
+          <div className="text-fg-30">nickomalley.net / v0.1</div>
+          <div className="text-fg-30">2026 · built with three.js</div>
+        </div>
+      </div>
+    </div>
+  );
+}
