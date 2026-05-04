@@ -163,6 +163,12 @@ body, body * {
   overflow: hidden;
 }
 .hover-thumb.visible { opacity: 1; }
+/* Cursor-following preview thumbnail makes no sense on touch — there's no
+   continuous hover cursor. Hide on phones, iPads, and any other touch-only
+   device. iPad with paired mouse keeps the thumb because it has hover. */
+@media (hover: none) and (pointer: coarse) {
+  .hover-thumb { display: none; }
+}
 .hover-thumb-inner {
   position: absolute;
   inset: 0;

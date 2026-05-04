@@ -72,10 +72,12 @@ export default function Header({ fps, tris }: HeaderProps) {
           </div>
         </div>
 
-        {/* RIGHT — info column */}
+        {/* RIGHT — info column. Pointer-events default to none (inherited
+            from the outer wrapper) so drag-to-orbit on the canvas isn't
+            blocked by the dead text area; only the nav block opts back in. */}
         <div
           className="mono text-right"
-          style={{ fontSize: 10, letterSpacing: '0.04em', lineHeight: 1.7, pointerEvents: 'auto' }}
+          style={{ fontSize: 10, letterSpacing: '0.04em', lineHeight: 1.7 }}
         >
           <div className="flex items-center gap-2 justify-end text-fg-70">
             <span
@@ -90,20 +92,39 @@ export default function Header({ fps, tris }: HeaderProps) {
           </div>
           <div className="text-accent-35">webgl · photogrammetry · 1k texture</div>
 
-          <div style={{ height: 20 }} />
+          <div style={{ height: 24 }} />
 
-          <a href="mailto:nick@nickomalley.net" className="text-fg-70 hover-accent block">
-            nick@nickomalley.net
-          </a>
-          <a href="https://www.linkedin.com/" className="text-fg-55 hover-accent block">LinkedIn</a>
-          <a href="https://www.instagram.com/" className="text-fg-55 hover-accent block">Instagram</a>
-          <a href="/scraps" className="text-fg-55 hover-accent block">Scraps</a>
-          <a href="/info" className="text-fg-55 hover-accent block">Info</a>
+          {/* Nav — larger mono links. pointerEvents: auto so they're
+              clickable through the otherwise pass-through header. */}
+          <div
+            style={{
+              fontSize: 18,
+              lineHeight: 1.4,
+              letterSpacing: '0.02em',
+              pointerEvents: 'auto',
+            }}
+          >
+            <a
+              href="#work"
+              onClick={(e) => {
+                e.preventDefault();
+                document
+                  .getElementById('work')
+                  ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+              className="text-fg-55 hover-accent block"
+            >
+              Work
+            </a>
+            <a href="https://www.linkedin.com/" className="text-fg-55 hover-accent block">LinkedIn</a>
+            <a href="https://www.instagram.com/" className="text-fg-55 hover-accent block">Instagram</a>
+            <a href="/scraps" className="text-fg-55 hover-accent block">Scraps</a>
+            <a href="/info" className="text-fg-55 hover-accent block">Info</a>
+          </div>
 
-          <div style={{ height: 20 }} />
+          <div style={{ height: 24 }} />
 
-          <div className="text-fg-30">nickomalley.net / v0.1</div>
-          <div className="text-fg-30">2026 · built with three.js</div>
+          <div className="text-fg-30">scroll to see work ↓</div>
         </div>
       </div>
     </div>

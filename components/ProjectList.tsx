@@ -68,8 +68,14 @@ export default function ProjectList() {
         </div>
       </div>
 
-      {/* List */}
-      <section className="px-8 md:px-12 pb-16 pt-12">
+      {/* List. id="work" is the scroll target for the header's Work link;
+          scroll-margin-top offsets so the section lands below the fixed header
+          rather than getting tucked under it. */}
+      <section
+        id="work"
+        className="px-8 md:px-12 pb-16 pt-12"
+        style={{ scrollMarginTop: 90 }}
+      >
         <div className="mono text-[10px] tracking-[0.18em] text-fg-30 mb-6 flex justify-between uppercase">
           <span>Selected Work</span>
           <span>{projects.length} entries</span>
