@@ -216,6 +216,26 @@ export default function Scene3D({
         sourceMat.metalness = 0.02;
         sourceMat.envMapIntensity = 0.55;
 
+        // Saturation boost via shader injection: photogrammetry texture
+        // tends to read flat under IBL, so push chroma without touching
+        // tone mapping (which would also affect the chrome trails).
+        sourceMat.onBeforeCompile = (shader) => {
+          shader.uniforms.uSaturation = { value: 1.3 };
+          shader.fragmentShader = shader.fragmentShader
+            .replace(
+              '#include <common>',
+              '#include <common>\nuniform float uSaturation;'
+            )
+            .replace(
+              '#include <color_fragment>',
+              `#include <color_fragment>
+              {
+                float _luma = dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+                diffuseColor.rgb = mix(vec3(_luma), diffuseColor.rgb, uSaturation);
+              }`
+            );
+        };
+
         const mesh = new THREE.Mesh(baseGeo, sourceMat);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
