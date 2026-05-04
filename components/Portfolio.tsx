@@ -97,8 +97,8 @@ export default function Portfolio() {
           style={{ minHeight: 'calc(100vh - 90px)' }}
         >
           <div className="text-center">
-            <div className="mono text-[11px] text-accent tracking-[0.2em] mb-2 uppercase">work</div>
-            <div className="work-arrow text-2xl text-accent leading-none">↓</div>
+            <div className="mono text-[14px] font-medium text-accent tracking-[0.18em] mb-3 uppercase">work</div>
+            <div className="work-arrow text-3xl font-bold text-accent leading-none">↓</div>
           </div>
         </section>
 
