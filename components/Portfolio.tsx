@@ -83,14 +83,18 @@ export default function Portfolio() {
 
       <Header fps={stats.fps} tris={stats.tris} />
 
-      {/* Scrollable content layer */}
-      <div style={{ position: 'relative', zIndex: 2 }}>
-        {/* Hero spacer — fills first viewport so 3D is alone, scroll cue at bottom.
-            pointerEvents: none lets drag-to-orbit on the 3D canvas behind work
-            through this section; native scroll still bubbles to document. */}
+      {/* Scrollable content layer.
+          pointerEvents: 'none' on this wrapper is the key — without it, the
+          wrapper's box at zIndex: 2 catches every pointer event over the
+          hero region (including ones that pass through the section), which
+          stops them from ever reaching the 3D canvas behind. Children that
+          need to remain interactive opt back in below. Native scroll is
+          unaffected since wheel/touch scroll bubble independently. */}
+      <div style={{ position: 'relative', zIndex: 2, pointerEvents: 'none' }}>
+        {/* Hero spacer — fills first viewport so 3D is alone, scroll cue at bottom. */}
         <section
           className="relative flex flex-col justify-end items-center pb-12"
-          style={{ minHeight: 'calc(100vh - 90px)', pointerEvents: 'none' }}
+          style={{ minHeight: 'calc(100vh - 90px)' }}
         >
           <div className="text-center">
             <div className="mono text-[11px] text-accent tracking-[0.2em] mb-2 uppercase">work</div>
@@ -98,7 +102,10 @@ export default function Portfolio() {
           </div>
         </section>
 
-        <ProjectList />
+        {/* Project list opts back in so rows can hover/tap */}
+        <div style={{ pointerEvents: 'auto' }}>
+          <ProjectList />
+        </div>
       </div>
     </div>
   );
