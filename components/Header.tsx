@@ -116,8 +116,22 @@ export default function Header({ fps, tris }: HeaderProps) {
             >
               Work
             </a>
-            <a href="https://www.linkedin.com/" className="text-fg-55 hover-accent block">LinkedIn</a>
-            <a href="https://www.instagram.com/" className="text-fg-55 hover-accent block">Instagram</a>
+            <a
+              href="https://www.linkedin.com/in/nick-o-malley/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-fg-55 hover-accent block"
+            >
+              LinkedIn
+            </a>
+            <a
+              href="https://www.instagram.com/nomallez/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-fg-55 hover-accent block"
+            >
+              Instagram
+            </a>
             <a href="/scraps" className="text-fg-55 hover-accent block">Scraps</a>
             <a href="/info" className="text-fg-55 hover-accent block">Info</a>
           </div>
