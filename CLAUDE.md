@@ -180,6 +180,11 @@ This is the most complex component. Key facts:
     this lets mobile users scroll the page over the fixed scene without
     fighting the orbit handler. Don't simplify back to single-finger touch
     orbit — that would re-introduce the scroll/orbit conflict on mobile.
+    Pinch-zoom is also explicitly blocked on the canvas via
+    `touchstart`/`touchmove` `preventDefault` (`{ passive: false }`) plus
+    Safari's `gesturestart`/`change`/`end` events, because `touch-action:
+    pan-y` alone doesn't stop iOS Safari's viewport pinch. Don't remove
+    these without re-testing on iOS.
   - A coral (`#FF7878`) "↻ two-finger orbit" hint surfaces on touch-only
     devices via `.touch-hint` (CSS media query `(hover: none) and
     (pointer: coarse)`) and fades after ~5s.

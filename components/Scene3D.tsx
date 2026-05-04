@@ -400,6 +400,22 @@ export default function Scene3D({
     mount.addEventListener('pointerup', onUp);
     mount.addEventListener('pointercancel', onUp);
 
+    // Block iOS viewport pinch-zoom while two or more fingers are on the
+    // canvas. touch-action: pan-y alone isn't reliable for this on Safari —
+    // we need explicit preventDefault on the raw touch events (with
+    // passive: false) to intercept the gesture before the system handles it.
+    const blockMultiTouchDefault = (e: TouchEvent) => {
+      if (e.touches.length >= 2) e.preventDefault();
+    };
+    mount.addEventListener('touchstart', blockMultiTouchDefault, { passive: false });
+    mount.addEventListener('touchmove', blockMultiTouchDefault, { passive: false });
+    // Safari-specific gesture events fire for pinch alongside touch events;
+    // preventDefault on these is the second belt-and-suspenders measure.
+    const blockGesture = (e: Event) => e.preventDefault();
+    mount.addEventListener('gesturestart', blockGesture as EventListener);
+    mount.addEventListener('gesturechange', blockGesture as EventListener);
+    mount.addEventListener('gestureend', blockGesture as EventListener);
+
     const onResize = () => {
       const w2 = mount.clientWidth;
       const h2 = mount.clientHeight;
@@ -533,6 +549,11 @@ export default function Scene3D({
       mount.removeEventListener('pointermove', onMove);
       mount.removeEventListener('pointerup', onUp);
       mount.removeEventListener('pointercancel', onUp);
+      mount.removeEventListener('touchstart', blockMultiTouchDefault);
+      mount.removeEventListener('touchmove', blockMultiTouchDefault);
+      mount.removeEventListener('gesturestart', blockGesture as EventListener);
+      mount.removeEventListener('gesturechange', blockGesture as EventListener);
+      mount.removeEventListener('gestureend', blockGesture as EventListener);
       if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
       trails.forEach((tr) => {
         tr.mesh.geometry.dispose();

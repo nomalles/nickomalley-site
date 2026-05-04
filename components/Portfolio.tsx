@@ -70,9 +70,14 @@ export default function Portfolio() {
           <span className="ml-3">z {coords.z}</span>
         </div>
 
-        {/* Touch-only gesture hint — fades after ~5s */}
-        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 mono text-[10px] tracking-[0.2em] uppercase pointer-events-none touch-hint whitespace-nowrap">
-          ↻ two-finger orbit
+        {/* Touch-only gesture hint — sits over the model, fades after ~5s */}
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mono tracking-[0.18em] uppercase pointer-events-none touch-hint whitespace-nowrap text-center"
+          style={{ fontSize: 'clamp(32px, 8vw, 56px)', fontWeight: 500 }}
+        >
+          ↻ two-finger
+          <br />
+          orbit
         </div>
       </div>
 
