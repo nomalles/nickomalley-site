@@ -205,6 +205,11 @@ body, body * {
   width: 60%;
   max-width: 280px;
   align-self: center;
+  /* Reserve the photo's intrinsic aspect ratio so the wrapper has real
+     height before Next/Image paints — otherwise the .shimmer background
+     would have nowhere to show during the load. */
+  aspect-ratio: 2315 / 2633;
+  overflow: hidden;
 }
 @media (min-width: 600px) {
   .info-modal-grid {

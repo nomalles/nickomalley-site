@@ -72,7 +72,7 @@ export default function InfoModal({ open, onClose }: Props) {
         </button>
 
         <div className="info-modal-grid">
-          <div className="info-modal-image">
+          <div className="info-modal-image shimmer">
             <Image
               src="/projects/info-pic.png"
               alt="Nick O'Malley"
