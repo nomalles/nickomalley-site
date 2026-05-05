@@ -145,14 +145,11 @@ export const projects: Project[] = [
     ],
     credits: {
       team: [
-        'Design Lead — Nick O’Malley',
-        'Director — Placeholder',
-        'Producer — Placeholder',
-        '3D — Placeholder',
-        'Editorial — Placeholder',
+        '3D Design / Motion — Nick O’Malley, Henry Barbera, Someform',
+        'ADs — Jee Ann, Nick O’Malley',
+        'Producers — Blake Davidhoff, Nikki Richter',
+        'CD — Emersson Barillas',
       ],
-      notes:
-        'Placeholder credits notes — describe Nick’s specific contribution and any context worth surfacing. Replace with real copy before launch.',
     },
     // SHA-256 of the literal string "placeholder". Replace this hash AND the
     // password before launch. To regenerate:
