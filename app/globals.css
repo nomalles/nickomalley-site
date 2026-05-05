@@ -119,6 +119,34 @@ body, body * {
   100% { opacity: 0; }
 }
 
+/* Shorter (3s) variant for case-study scene heroes — same coral hue but
+   a tighter window since the user's already deeper in the site. */
+.touch-hint-3s {
+  display: none;
+  color: #FF7878;
+}
+@media (hover: none) and (pointer: coarse) {
+  .touch-hint-3s {
+    display: block;
+    animation: touch-hint-fade-3s 3s ease-in-out forwards;
+  }
+}
+@keyframes touch-hint-fade-3s {
+  0%   { opacity: 0; }
+  15%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Case-study scene hero — wider on desktop (21:9 cinema feel) but taller
+   on mobile so the 3D model isn't a sliver. Inline style still sets
+   aspect-ratio as fallback; the media query overrides on small viewports. */
+@media (max-width: 768px) {
+  .case-study-hero-scene {
+    aspect-ratio: 4 / 5 !important;
+  }
+}
+
 /* Case study phase grid.
    Mobile: single-column stack.
    md+:    CSS-columns masonry — items flow top-to-bottom in each column

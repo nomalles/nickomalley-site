@@ -127,6 +127,11 @@ export default function Scene3DIcons({ scanPath }: Scene3DIconsProps) {
     // PBR shader (e.g., if someone hands it a custom ShaderMaterial later).
     function injectScanShader(mat: THREE.Material) {
       const m = mat as THREE.MeshStandardMaterial;
+      // Boost env-map response slightly so the HDRI shows up clearly in the
+      // glossy reveal state. Source material gets the same boost for tonal
+      // continuity with the rest of the site.
+      if ('envMapIntensity' in m) m.envMapIntensity = 1.1;
+
       m.onBeforeCompile = (shader) => {
         shader.uniforms.uScanY = uScanY;
         shader.uniforms.uScanWidth = uScanWidth;
@@ -144,6 +149,11 @@ export default function Scene3DIcons({ scanPath }: Scene3DIconsProps) {
             vScanWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;`
           );
 
+        // Compute the per-fragment "shows grey" amount once early in main()
+        // (right after clipping planes), then reuse it in <color_fragment>
+        // (mix to a darker base) and <roughnessmap_fragment> (drop roughness
+        // so the reveal state reads as a glossy reflective material that
+        // picks up the HDRI). Single computation, used in two places.
         shader.fragmentShader = shader.fragmentShader
           .replace(
             '#include <common>',
@@ -155,16 +165,26 @@ export default function Scene3DIcons({ scanPath }: Scene3DIconsProps) {
             uniform float uNewIsGrey;`
           )
           .replace(
-            '#include <color_fragment>',
-            `#include <color_fragment>
+            '#include <clipping_planes_fragment>',
+            `#include <clipping_planes_fragment>
+            float _scanShowsGrey;
             {
               float halfBand = uScanWidth * 0.5;
               // pastScan: 1 if the scan band has already passed this pixel
               // (pixel is below the band), 0 if not yet, smooth in between.
               float pastScan = 1.0 - smoothstep(uScanY - halfBand, uScanY + halfBand, vScanWorldPos.y);
-              float showsGrey = mix(uOldIsGrey, uNewIsGrey, pastScan);
-              diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.5), showsGrey);
+              _scanShowsGrey = mix(uOldIsGrey, uNewIsGrey, pastScan);
             }`
+          )
+          .replace(
+            '#include <color_fragment>',
+            `#include <color_fragment>
+            diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.12), _scanShowsGrey);`
+          )
+          .replace(
+            '#include <roughnessmap_fragment>',
+            `#include <roughnessmap_fragment>
+            roughnessFactor = mix(roughnessFactor, 0.08, _scanShowsGrey);`
           );
       };
       m.needsUpdate = true;
@@ -188,6 +208,10 @@ export default function Scene3DIcons({ scanPath }: Scene3DIconsProps) {
         const maxExt = Math.max(size.x, size.y, size.z) || 1;
         const targetSize = 2.4;
         root.scale.setScalar(targetSize / maxExt);
+        // Slight sideways roll on the model so it doesn't read as
+        // perfectly upright. Applied to the GLB root so the auto-rotate
+        // (which spins objectGroup around Y) layers on top cleanly.
+        root.rotation.z = 0.18;
 
         objectGroup.add(root);
 
@@ -299,7 +323,7 @@ export default function Scene3DIcons({ scanPath }: Scene3DIconsProps) {
       scanTime += dt;
 
       if (!isDragging) {
-        targetRotY += dt * 0.18;
+        targetRotY += dt * 0.28;
         targetRotX += (0 - targetRotX) * dt * 0.6;
       }
       currentRotY += (targetRotY - currentRotY) * 0.1;

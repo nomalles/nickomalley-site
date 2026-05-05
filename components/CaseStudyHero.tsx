@@ -45,11 +45,25 @@ export default function CaseStudyHero({ hero, title }: Props) {
 
   if (hero.kind === 'scene') {
     return (
+      // case-study-hero-scene carries a responsive aspect-ratio: 21:9 on
+      // desktop, taller on mobile so the model has more room to breathe
+      // on smaller screens. Inline aspectRatio as fallback.
       <div
-        className="overflow-hidden w-full relative"
+        className="overflow-hidden w-full relative case-study-hero-scene"
         style={{ aspectRatio: hero.aspect ?? '21/9' }}
       >
         <Scene3DIcons scanPath={hero.scanPath} />
+        {/* Touch-only orbit hint — coral, ~3s total fade in/hold/out.
+            Centered over the model; pointer-events: none so it doesn't
+            block drag-to-orbit underneath. */}
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mono tracking-[0.18em] uppercase pointer-events-none touch-hint-3s whitespace-nowrap text-center"
+          style={{ fontSize: 'clamp(24px, 6vw, 44px)', fontWeight: 500 }}
+        >
+          ↻ two-finger
+          <br />
+          orbit
+        </div>
       </div>
     );
   }
