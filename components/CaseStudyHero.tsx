@@ -39,7 +39,18 @@ export default function CaseStudyHero({ hero, title }: Props) {
   return (
     <div
       className="overflow-hidden w-full"
-      style={{ aspectRatio: hero.aspect ?? '21/9' }}
+      // --media-object-fit is Mux Player's CSS hook for its inner <video>
+      // element's object-fit. We set it on the wrapper rather than on
+      // MuxPlayer's `style` prop because Mux's `MuxCSSProperties` type is
+      // stricter than React's `CSSProperties` and a cast doesn't satisfy
+      // its custom-property index signature. CSS custom properties cascade
+      // through shadow DOM, so declaring it on the parent reaches the
+      // player just the same. "cover" scales the video up to fill the 21:9
+      // frame; the tradeoff is ~15% top/bottom crop on a 16:9 source.
+      style={{
+        aspectRatio: hero.aspect ?? '21/9',
+        '--media-object-fit': 'cover',
+      } as React.CSSProperties}
       onContextMenu={(e) => e.preventDefault()}
     >
       <MuxPlayer
@@ -51,17 +62,7 @@ export default function CaseStudyHero({ hero, title }: Props) {
         playsInline
         nohotkeys
         metadata={{ video_title: title }}
-        // --media-object-fit is Mux Player's CSS hook for the inner <video>
-        // element's object-fit. "cover" scales the video up to fill the
-        // 21:9 frame with no pillarbox bars; the tradeoff is ~15% top/bottom
-        // crop because the source is 16:9. Cast through CSSProperties so
-        // TS allows the custom property.
-        style={{
-          width: '100%',
-          height: '100%',
-          display: 'block',
-          '--media-object-fit': 'cover',
-        } as React.CSSProperties}
+        style={{ width: '100%', height: '100%', display: 'block' }}
       />
     </div>
   );
