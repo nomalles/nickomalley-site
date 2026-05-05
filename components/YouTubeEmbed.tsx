@@ -19,6 +19,10 @@ export function youtubeEmbedSrc(
   const params = new URLSearchParams();
   params.set('rel', '0');
   params.set('modestbranding', '1');
+  // `vq` is YouTube's unofficial "starting quality" hint. Not in the
+  // public embed-params list, but historically respected as a preference.
+  // YouTube still adapts based on connection/viewport — this is best-effort.
+  params.set('vq', 'hd1080');
   if (playback === 'autoplay-muted-loop') {
     params.set('autoplay', '1');
     params.set('mute', '1');

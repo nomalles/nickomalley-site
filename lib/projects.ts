@@ -345,13 +345,13 @@ export const projects: Project[] = [
       'Animation for Pokemon GO narrative spots, used across their socials for the Season of GO Fest 2022. Each episode focused on the introduction of new Pokemon in the game.',
     phases: [
       {
-        // Second autoplay-muted YouTube spot, full-width.
+        label: 'Ultrabeasts campaign',
         images: [
-          { kind: 'youtube', videoId: 'upiuMRWfll8', aspect: '16/9' },
+          { kind: 'youtube', videoId: 'upiuMRWfll8', aspect: '16/9', playback: 'user' },
         ],
       },
       {
-        // Mixed grid — animated GIFs, a BTS still, plus a Mux clip.
+        label: 'Content snippets',
         images: [
           { kind: 'image', src: '/projects/pokemon-go/Frame_09.gif', width: 1000, height: 563 },
           { kind: 'image', src: '/projects/pokemon-go/PGO-Narr_MAIN_ENG-1920x1080_1_3.gif', width: 1000, height: 563 },
@@ -363,7 +363,7 @@ export const projects: Project[] = [
         ],
       },
       {
-        // Closing YouTube embed — visitor presses play, normal controls.
+        label: 'Even more ultrabeasts',
         images: [
           { kind: 'youtube', videoId: 'd6evxdX1iVI', aspect: '16/9', playback: 'user' },
         ],
