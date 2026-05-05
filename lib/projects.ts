@@ -78,7 +78,7 @@ export const projects: Project[] = [
   {
     id: '0023',
     slug: 'apple-vision-pro',
-    year: '2024',
+    year: '2023-2025',
     client: 'Apple',
     title: 'Vision Pro App Store',
     role: '3D Lead, Motion, AD',
@@ -88,9 +88,8 @@ export const projects: Project[] = [
       playbackId: 'OtQYj2wu3jkXRHzbx00Hrn17Lf5nZQxtB3HGsKRc8Rdk',
       aspect: '21/9',
     },
-    scope: ['App Store Onboarding', 'Editorial Motion', '3D Direction'],
     context:
-      'Placeholder context paragraph — 2 to 3 sentences describing what this project is, the scale of the work, and Nick’s contribution. Replace with real copy before launch.',
+      'We were tasked with designing and launching a new App Store for the Vision Pro. This store would leverage editorial 3D content to showcase the experiences on device. The work is spread across 2-3.',
     phases: [
       {
         framing:
