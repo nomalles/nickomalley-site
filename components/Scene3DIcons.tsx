@@ -73,11 +73,23 @@ export default function Scene3DIcons({ scanPath }: Scene3DIconsProps) {
     const objectGroup = new THREE.Group();
     scene.add(objectGroup);
 
-    // Scan-line shader — cyan band that sweeps the model's world Y axis.
+    // Shared scan uniforms — both the cyan wireframe shader AND the per-mesh
+    // texture-mix shader read from these objects, so updating .value once
+    // updates everything in lockstep. uOldIsGrey / uNewIsGrey express the
+    // pre- and post-scan state (0 = source texture, 1 = neutral grey); on
+    // scan start we set new = !old, during the sweep the shader interpolates
+    // per pixel based on whether the scan band has passed that pixel, and
+    // on scan end we sync old = new for the next cycle.
+    const uScanY = { value: 100.0 };
+    const uScanWidth = { value: 0.18 };
+    const uOldIsGrey = { value: 0.0 };
+    const uNewIsGrey = { value: 0.0 };
+
+    // Cyan wireframe band that physically draws the scan position.
     const scanMat = new THREE.ShaderMaterial({
       uniforms: {
-        uScanY: { value: 100.0 },
-        uScanWidth: { value: 0.18 },
+        uScanY,
+        uScanWidth,
         uColor: { value: new THREE.Color(0x00f8ff) },
       },
       vertexShader: /* glsl */ `
@@ -107,24 +119,55 @@ export default function Scene3DIcons({ scanPath }: Scene3DIconsProps) {
     let scanMin = -1;
     let scanMax = 1;
 
-    // Texture-swap state: every scan completion toggles between the source
-    // material on each mesh and a neutral grey "reveal" material. We track
-    // the original materials per-mesh so multi-mesh GLBs all toggle in sync.
-    const originalMaterials = new Map<string, THREE.Material | THREE.Material[]>();
-    const greyMat = new THREE.MeshStandardMaterial({
-      color: 0x808080,
-      roughness: 0.55,
-      metalness: 0.0,
-    });
-    let isGrey = false;
-    function applyMaterial(grey: boolean) {
-      objectGroup.traverse((obj) => {
-        const m = obj as THREE.Mesh;
-        if (!m.isMesh) return;
-        const original = originalMaterials.get(m.uuid);
-        if (!original) return;
-        m.material = grey ? greyMat : original;
-      });
+    // Inject world-Y aware texture-mix into a MeshStandardMaterial-compatible
+    // material. The shader recomputes "has the scan band passed this pixel?"
+    // each fragment, and uses that as the t in mix(uOldIsGrey, uNewIsGrey, t)
+    // so the transition follows the wireframe sweep instead of snapping at
+    // the end. Falls back to no-op if the material doesn't have a typical
+    // PBR shader (e.g., if someone hands it a custom ShaderMaterial later).
+    function injectScanShader(mat: THREE.Material) {
+      const m = mat as THREE.MeshStandardMaterial;
+      m.onBeforeCompile = (shader) => {
+        shader.uniforms.uScanY = uScanY;
+        shader.uniforms.uScanWidth = uScanWidth;
+        shader.uniforms.uOldIsGrey = uOldIsGrey;
+        shader.uniforms.uNewIsGrey = uNewIsGrey;
+
+        shader.vertexShader = shader.vertexShader
+          .replace(
+            '#include <common>',
+            '#include <common>\nvarying vec3 vScanWorldPos;'
+          )
+          .replace(
+            '#include <project_vertex>',
+            `#include <project_vertex>
+            vScanWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;`
+          );
+
+        shader.fragmentShader = shader.fragmentShader
+          .replace(
+            '#include <common>',
+            `#include <common>
+            varying vec3 vScanWorldPos;
+            uniform float uScanY;
+            uniform float uScanWidth;
+            uniform float uOldIsGrey;
+            uniform float uNewIsGrey;`
+          )
+          .replace(
+            '#include <color_fragment>',
+            `#include <color_fragment>
+            {
+              float halfBand = uScanWidth * 0.5;
+              // pastScan: 1 if the scan band has already passed this pixel
+              // (pixel is below the band), 0 if not yet, smooth in between.
+              float pastScan = 1.0 - smoothstep(uScanY - halfBand, uScanY + halfBand, vScanWorldPos.y);
+              float showsGrey = mix(uOldIsGrey, uNewIsGrey, pastScan);
+              diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.5), showsGrey);
+            }`
+          );
+      };
+      m.needsUpdate = true;
     }
 
     // ---------- Load the GLB ----------
@@ -132,31 +175,38 @@ export default function Scene3DIcons({ scanPath }: Scene3DIconsProps) {
     loader.load(
       scanPath,
       (gltf) => {
+        const root = gltf.scene;
         // Compute combined bounding box so the entire scene (potentially
         // many meshes) gets centered and scaled together.
-        const root = gltf.scene;
         root.updateMatrixWorld(true);
         const bbox = new THREE.Box3().setFromObject(root);
         const size = new THREE.Vector3();
         const center = new THREE.Vector3();
         bbox.getSize(size);
         bbox.getCenter(center);
-
-        // Translate the root so its bounding-box center sits at origin.
         root.position.sub(center);
         const maxExt = Math.max(size.x, size.y, size.z) || 1;
         const targetSize = 2.4;
         root.scale.setScalar(targetSize / maxExt);
 
-        // Capture per-mesh original materials and tag them as scan targets.
-        root.traverse((obj) => {
-          const m = obj as THREE.Mesh;
-          if (m.isMesh) {
-            originalMaterials.set(m.uuid, m.material);
-          }
-        });
-
         objectGroup.add(root);
+
+        // Per mesh: parent a wireframe (sharing scanMat) directly to it so
+        // the wireframe inherits the mesh's transform via the scene graph.
+        // Also inject the texture-mix shader into the mesh's material so
+        // its diffuse color tracks the scan sweep.
+        root.traverse((obj) => {
+          const mesh = obj as THREE.Mesh;
+          if (!mesh.isMesh || !mesh.geometry) return;
+
+          const wireGeo = new THREE.WireframeGeometry(mesh.geometry);
+          const wireLines = new THREE.LineSegments(wireGeo, scanMat);
+          mesh.add(wireLines);
+
+          const mat = mesh.material;
+          if (Array.isArray(mat)) mat.forEach(injectScanShader);
+          else if (mat) injectScanShader(mat);
+        });
 
         // After scaling, recompute the world-space Y range for the scan
         // sweep so it covers the full vertical extent of the model.
@@ -164,22 +214,6 @@ export default function Scene3DIcons({ scanPath }: Scene3DIconsProps) {
         const finalBox = new THREE.Box3().setFromObject(objectGroup);
         scanMin = finalBox.min.y - 0.1;
         scanMax = finalBox.max.y + 0.1;
-
-        // Wireframe overlay carrying the scan-line shader. We build it
-        // from a flattened version of all mesh geometries so the shader
-        // sees one continuous mesh.
-        const wireGroup = new THREE.Group();
-        root.traverse((obj) => {
-          const m = obj as THREE.Mesh;
-          if (m.isMesh && m.geometry) {
-            const wireGeo = new THREE.WireframeGeometry(m.geometry);
-            const wireLines = new THREE.LineSegments(wireGeo, scanMat);
-            // Match the mesh's local transform so the wireframe sits on top.
-            wireLines.applyMatrix4(m.matrixWorld.clone().premultiply(root.matrixWorld.clone().invert()));
-            wireGroup.add(wireLines);
-          }
-        });
-        objectGroup.add(wireGroup);
       },
       undefined,
       (err) => console.error('GLB load failed:', err)
@@ -280,21 +314,26 @@ export default function Scene3DIcons({ scanPath }: Scene3DIconsProps) {
       const phase = scanTime % PERIOD;
       const isActive = phase < DUR;
       if (isActive !== scanWasActive) {
-        scanWasActive = isActive;
-        // On the falling edge (scan finishing), toggle materials. The user
-        // sees: scan band sweeps with material A, completes, material B
-        // is revealed. Next scan ~5s later toggles back.
-        if (!isActive) {
-          isGrey = !isGrey;
-          applyMaterial(isGrey);
+        if (isActive) {
+          // Rising edge: pick the "after" state opposite to the current
+          // "before" state. The shader will sweep pixels through the band
+          // from old → new as uScanY rises.
+          uNewIsGrey.value = uOldIsGrey.value > 0.5 ? 0.0 : 1.0;
+        } else {
+          // Falling edge: scan band has fully passed the model — sync the
+          // settled "after" state into the next cycle's "before".
+          uOldIsGrey.value = uNewIsGrey.value;
         }
+        scanWasActive = isActive;
       }
       if (isActive) {
         const t = phase / DUR;
         const eased = 1 - Math.pow(1 - t, 2.4);
-        scanMat.uniforms.uScanY.value = scanMin + eased * (scanMax - scanMin);
+        uScanY.value = scanMin + eased * (scanMax - scanMin);
       } else {
-        scanMat.uniforms.uScanY.value = 100;
+        // Park the scan band well above the model so every pixel reads as
+        // "post-scan" (pastScan = 1) and the shader settles on uNewIsGrey.
+        uScanY.value = 100;
       }
 
       renderer.render(scene, camera);
@@ -315,7 +354,6 @@ export default function Scene3DIcons({ scanPath }: Scene3DIconsProps) {
       mount.removeEventListener('gestureend', blockGesture as EventListener);
       if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
       scanMat.dispose();
-      greyMat.dispose();
       if (envRT) envRT.dispose();
       scene.environment = null;
       renderer.dispose();

@@ -40,6 +40,13 @@ export type Media =
 export type FramingSegment = string | { text: string; href: string };
 
 export type Phase = {
+  /**
+   * Heading shown above the framing sentence. When omitted, the renderer
+   * falls back to "Phase 01", "Phase 02", etc. based on order. Use a
+   * label (e.g. "Concepting", "Usage") when phases have specific names
+   * rather than a chronological numbered structure.
+   */
+  label?: string;
   framing: string | FramingSegment[];
   images: Media[];
 };
@@ -186,6 +193,7 @@ export const projects: Project[] = [
       'Placeholder context paragraph for the 3D Icons project — replace with real copy describing scope, scale, and Nick’s contribution.',
     phases: [
       {
+        label: 'Concepting',
         framing:
           'Concepting — placeholder framing sentence describing the early exploration and system definition for the 3D icon language.',
         images: [
@@ -200,6 +208,7 @@ export const projects: Project[] = [
         ],
       },
       {
+        label: 'Usage',
         framing:
           'Usage — placeholder framing sentence describing how the icon system showed up across editorial layouts and product surfaces.',
         images: [
@@ -214,6 +223,7 @@ export const projects: Project[] = [
         ],
       },
       {
+        label: 'Tool',
         framing:
           'Tool — placeholder framing sentence describing the production tool that supported the icon program.',
         images: [

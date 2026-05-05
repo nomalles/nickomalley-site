@@ -151,7 +151,7 @@ function PhaseBlock({ index, phase }: { index: number; phase: Phase }) {
   return (
     <div className="mb-24">
       <div className="mono text-[10px] text-accent tracking-[0.18em] uppercase mb-2">
-        Phase {String(index).padStart(2, '0')}
+        {phase.label ?? `Phase ${String(index).padStart(2, '0')}`}
       </div>
       <p
         className="text-fg-90 mb-8"
