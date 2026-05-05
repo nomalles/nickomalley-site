@@ -22,7 +22,10 @@ export default function CustomCursor() {
   return (
     <div
       ref={cursorRef}
-      className="fixed top-0 left-0 w-2 h-2 rounded-full pointer-events-none z-[100] glow-dot"
+      // Sits above modals/overlays (info modal is z-1000) so the cursor
+      // stays visible on top of every UI layer. Global `cursor: none`
+      // rule means there's no system cursor to fall back to.
+      className="fixed top-0 left-0 w-2 h-2 rounded-full pointer-events-none z-[9999] glow-dot"
       style={{ backgroundColor: '#00FF80', willChange: 'transform' }}
     />
   );

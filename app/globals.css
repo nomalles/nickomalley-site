@@ -149,8 +149,8 @@ body, body * {
 
 /* Info modal — popup About Nick from the header link. Backdrop fades
    in on mount; modal panel scales in slightly. Subtle, fast (200ms).
-   Sits at z-index 1000 so it covers Header (50) and CustomCursor (100)
-   feel right behind. */
+   Sits at z-index 1000 (above Header at 50) — CustomCursor lives at
+   9999 so it stays visible above the modal too. */
 .info-modal-backdrop {
   position: fixed;
   inset: 0;

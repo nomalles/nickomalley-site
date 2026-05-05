@@ -139,7 +139,8 @@ public/
 | 2     | Scrollable content (hero spacer, `ProjectList`) |
 | 50    | `Header` — fixed top bar |
 | 95    | Hover thumbnail (in `ProjectList`) |
-| 100   | `CustomCursor` |
+| 1000  | `InfoModal` backdrop (rendered via portal at body) |
+| 9999  | `CustomCursor` (above modals so the green dot is visible everywhere) |
 
 The layout intentionally inverts the usual stacking — content scrolls *over*
 the fixed 3D scene, with the type sitting behind everything as foundation.
