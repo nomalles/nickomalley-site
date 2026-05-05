@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import type { Media } from '@/lib/projects';
+import YouTubeEmbed from './YouTubeEmbed';
 
 // Mux Player is a heavy web component and needs the DOM to register itself —
 // load it client-side only so the case study page can still be statically
@@ -39,6 +40,17 @@ export default function CaseStudyHero({ hero, title }: Props) {
           sizes="100vw"
           className="object-cover"
         />
+      </div>
+    );
+  }
+
+  if (hero.kind === 'youtube') {
+    return (
+      <div
+        className="overflow-hidden w-full"
+        style={{ aspectRatio: hero.aspect ?? '16/9' }}
+      >
+        <YouTubeEmbed media={hero} />
       </div>
     );
   }

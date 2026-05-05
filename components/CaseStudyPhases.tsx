@@ -4,6 +4,7 @@ import { Fragment, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import type { Phase, Media } from '@/lib/projects';
+import YouTubeEmbed from './YouTubeEmbed';
 
 // Mux Player is heavy; only mount it on the client so the page itself can
 // stay static. Used for video media in phase grids (e.g. tool walkthroughs).
@@ -162,11 +163,13 @@ function PhaseBlock({
   phase: Phase;
   phaseCount: number;
 }) {
-  // A single-video phase reads better as a full-width hero than as one
-  // skinny column inside a 3-col masonry. Detect that case explicitly and
-  // bypass the grid; mixed video/image phases still flow through the grid.
+  // A single-video phase (Mux or YouTube) reads better as a full-width
+  // hero than as one skinny column inside a 3-col masonry. Detect that
+  // case explicitly and bypass the grid; mixed video/image phases still
+  // flow through the grid.
+  const onlyItem = phase.images.length === 1 ? phase.images[0]! : null;
   const isSingleVideo =
-    phase.images.length === 1 && phase.images[0]!.kind === 'mux';
+    onlyItem !== null && (onlyItem.kind === 'mux' || onlyItem.kind === 'youtube');
 
   // Auto "Phase NN" only for multi-phase projects. Single-section projects
   // (e.g. a flat awards grid) leave the heading off entirely.
@@ -193,8 +196,17 @@ function PhaseBlock({
           )}
         </>
       )}
-      {isSingleVideo ? (
-        <SingleVideo media={phase.images[0] as Extract<Media, { kind: 'mux' }>} />
+      {isSingleVideo && onlyItem ? (
+        onlyItem.kind === 'mux' ? (
+          <SingleVideo media={onlyItem} />
+        ) : onlyItem.kind === 'youtube' ? (
+          <div
+            className="overflow-hidden w-full"
+            style={{ aspectRatio: onlyItem.aspect ?? '16/9' }}
+          >
+            <YouTubeEmbed media={onlyItem} />
+          </div>
+        ) : null
       ) : (
         <div
           className="phase-grid"
@@ -368,6 +380,17 @@ function ImageCell({ media }: { media: Media }) {
           metadata={{ video_title: media.alt ?? '' }}
           style={{ width: '100%', height: '100%', display: 'block' }}
         />
+      </div>
+    );
+  }
+
+  if (media.kind === 'youtube') {
+    return (
+      <div
+        className="overflow-hidden shimmer"
+        style={{ aspectRatio: media.aspect ?? '16/9' }}
+      >
+        <YouTubeEmbed media={media} />
       </div>
     );
   }

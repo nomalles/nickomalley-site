@@ -42,6 +42,18 @@ export type Media =
       kind: 'scene';
       scanPath: string;
       aspect?: string;
+    }
+  | {
+      /**
+       * YouTube embed. Pass the video ID (the part after `?v=` or
+       * `/embed/`). `playback` defaults to 'autoplay-muted-loop' (matches
+       * Mux hero behavior); 'user' disables autoplay/loop and shows the
+       * normal YouTube poster + play button.
+       */
+      kind: 'youtube';
+      videoId: string;
+      aspect?: string;
+      playback?: 'autoplay-muted-loop' | 'user';
     };
 
 /**
@@ -314,6 +326,50 @@ export const projects: Project[] = [
     title: 'App Store Originals',
     role: '3D Design Lead',
     tint: ['#7e3eff', '#1f0a4a'],
+  },
+  {
+    id: '0020a',
+    slug: 'pokemon-go-season-of-go',
+    year: '2022',
+    client: 'Niantic, The Pokemon Company',
+    title: 'Season of GO',
+    role: 'Motion Designer',
+    studio: 'Trailer Park',
+    tint: ['#ffd23f', '#1e2c5e'],
+    hero: {
+      kind: 'youtube',
+      videoId: 'xI4CGC_jc4o',
+      aspect: '16/9',
+    },
+    context:
+      'Animation for Pokemon GO narrative spots, used across their socials for the Season of GO Fest 2022. Each episode focused on the introduction of new Pokemon in the game.',
+    phases: [
+      {
+        // Second autoplay-muted YouTube spot, full-width.
+        images: [
+          { kind: 'youtube', videoId: 'upiuMRWfll8', aspect: '16/9' },
+        ],
+      },
+      {
+        // Mixed grid — animated GIFs, a BTS still, plus a Mux clip.
+        images: [
+          { kind: 'image', src: '/projects/pokemon-go/Frame_09.gif', width: 1000, height: 563 },
+          { kind: 'image', src: '/projects/pokemon-go/PGO-Narr_MAIN_ENG-1920x1080_1_3.gif', width: 1000, height: 563 },
+          { kind: 'image', src: '/projects/pokemon-go/PGO-Narr_MAIN_ENG-1920x1080_1_4.gif', width: 1000, height: 563 },
+          { kind: 'image', src: '/projects/pokemon-go/PGO_GIF_nihilego.gif', width: 1280, height: 720 },
+          { kind: 'image', src: '/projects/pokemon-go/PGO_GIF_shaymin.gif', width: 1280, height: 720 },
+          { kind: 'mux', playbackId: 'dCTLZg8lXjBK97bNsTXqQ6LD5Yd6jzF00009onJ5z008kI', aspect: '16/9' },
+          { kind: 'image', src: '/projects/pokemon-go/bts.png', width: 1346, height: 1220 },
+        ],
+      },
+      {
+        // Closing YouTube embed — visitor presses play, normal controls.
+        images: [
+          { kind: 'youtube', videoId: 'd6evxdX1iVI', aspect: '16/9', playback: 'user' },
+        ],
+      },
+    ],
+    // No passwordHash — public.
   },
   {
     id: '0020',
