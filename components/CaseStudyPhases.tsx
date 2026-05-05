@@ -66,17 +66,8 @@ export default function CaseStudyPhases({ slug, phases, passwordHash }: Props) {
         The Work
       </div>
 
-      <div
-        className={`phase-gate ${unlocked ? 'unlocked' : ''}`}
-        aria-hidden={!unlocked}
-      >
-        {phases.map((phase, i) => (
-          <PhaseBlock key={i} index={i + 1} phase={phase} />
-        ))}
-      </div>
-
       {gated && !unlocked && (
-        <form onSubmit={submit} className="mt-12 max-w-md">
+        <form onSubmit={submit} className="mb-12 max-w-md">
           <label
             htmlFor="phase-passcode"
             className="mono text-[10px] text-fg-30 uppercase tracking-[0.18em] block mb-3"
@@ -124,6 +115,15 @@ export default function CaseStudyPhases({ slug, phases, passwordHash }: Props) {
           )}
         </form>
       )}
+
+      <div
+        className={`phase-gate ${unlocked ? 'unlocked' : ''}`}
+        aria-hidden={!unlocked}
+      >
+        {phases.map((phase, i) => (
+          <PhaseBlock key={i} index={i + 1} phase={phase} />
+        ))}
+      </div>
     </section>
   );
 }
