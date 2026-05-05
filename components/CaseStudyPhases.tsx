@@ -73,11 +73,18 @@ export default function CaseStudyPhases({ phases, passwordHash }: Props) {
     setSubmitting(false);
   }
 
+  // Only show the "The Work" intro label when phases actually have written
+  // structure (labels or framings). Pages where the phases are just flat
+  // visual blocks would render a label that has nothing to introduce.
+  const showWorkLabel = phases.some((p) => p.label || p.framing);
+
   return (
     <section className="px-8 md:px-12 pt-24">
-      <div className="mono text-[10px] tracking-[0.18em] text-fg-30 uppercase mb-12">
-        The Work
-      </div>
+      {showWorkLabel && (
+        <div className="mono text-[10px] tracking-[0.18em] text-fg-30 uppercase mb-12">
+          The Work
+        </div>
+      )}
 
       {gated && !unlocked && (
         <form onSubmit={submit} className="mb-12 max-w-md">
