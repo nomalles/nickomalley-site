@@ -41,13 +41,15 @@ export type FramingSegment = string | { text: string; href: string };
 
 export type Phase = {
   /**
-   * Heading shown above the framing sentence. When omitted, the renderer
-   * falls back to "Phase 01", "Phase 02", etc. based on order. Use a
-   * label (e.g. "Concepting", "Usage") when phases have specific names
-   * rather than a chronological numbered structure.
+   * Heading shown above the framing sentence. When omitted on a multi-
+   * phase project, the renderer falls back to "Phase 01", "Phase 02",
+   * etc. On a single-phase project (one section, no chronological
+   * structure), an absent label shows nothing — the section just renders
+   * its grid with no heading.
    */
   label?: string;
-  framing: string | FramingSegment[];
+  /** Optional. When omitted, the framing paragraph isn't rendered. */
+  framing?: string | FramingSegment[];
   images: Media[];
 };
 
@@ -173,6 +175,39 @@ export const projects: Project[] = [
     // SHA-256 of the literal string "placeholder". Replace this hash AND the
     // password before launch. To regenerate:
     //   node -e "console.log(require('crypto').createHash('sha256').update('YOURPASSWORD').digest('hex'))"
+    passwordHash: '4097889236a2af26c293033feb964c4cf118c0224e0d063fec0a89e9d0569ef2',
+  },
+  {
+    id: '0023a',
+    slug: 'apple-app-store-awards',
+    year: '2024 + 2025',
+    client: 'Apple',
+    title: 'App Store Awards',
+    role: 'AD',
+    tint: ['#ffaa42', '#3a1f4a'],
+    hero: {
+      kind: 'mux',
+      playbackId: 'nStn7ByAaOJnLCOKhUYsttlE01i01YL1zYjN4E9u9avwM',
+      aspect: '16/9',
+    },
+    context:
+      'App Store Awards for 2024 and 2025. These were Co-Art Directed, working with Brand New School for the design and motion.',
+    phases: [
+      {
+        // No label, no framing — single flat grid section. Mixed images
+        // and Mux videos flow through the masonry layout.
+        images: [
+          { kind: 'image', src: '/projects/apple-app-awards/Storyboard_2022.png', width: 1658, height: 2944 },
+          { kind: 'mux', playbackId: 'dMn00brUD84EZ01fHsVDQIeiuQ4cQOGpVqhHzJZDgdyCg', aspect: '16/9' },
+          { kind: 'image', src: '/projects/apple-app-awards/Screenshot 2024-10-16 at 3.22.55 PM.png', width: 5252, height: 2948 },
+          { kind: 'image', src: '/projects/apple-app-awards/GOTY_iphone-AS-Newsroom-02.png', width: 3840, height: 2160 },
+          { kind: 'mux', playbackId: 'vSpxs37m7AoVH6zndUamN00YoeI01huxotADwPo00ZKNNk', aspect: '16/9' },
+          { kind: 'image', src: '/projects/apple-app-awards/Screenshot 2025-02-12 at 12.04.07 PM.png', width: 2036, height: 1140 },
+          { kind: 'mux', playbackId: 'WJbMkm41WjCcNM8mM01lLDPCE00Vx78orh6O01bNcsOQyU', aspect: '16/9' },
+        ],
+      },
+    ],
+    // Same hash as the other Apple pages — unlocking one unlocks all.
     passwordHash: '4097889236a2af26c293033feb964c4cf118c0224e0d063fec0a89e9d0569ef2',
   },
   {

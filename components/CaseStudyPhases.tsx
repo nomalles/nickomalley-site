@@ -134,31 +134,58 @@ export default function CaseStudyPhases({ phases, passwordHash }: Props) {
         aria-hidden={!unlocked}
       >
         {phases.map((phase, i) => (
-          <PhaseBlock key={i} index={i + 1} phase={phase} />
+          <PhaseBlock
+            key={i}
+            index={i + 1}
+            phase={phase}
+            phaseCount={phases.length}
+          />
         ))}
       </div>
     </section>
   );
 }
 
-function PhaseBlock({ index, phase }: { index: number; phase: Phase }) {
+function PhaseBlock({
+  index,
+  phase,
+  phaseCount,
+}: {
+  index: number;
+  phase: Phase;
+  phaseCount: number;
+}) {
   // A single-video phase reads better as a full-width hero than as one
   // skinny column inside a 3-col masonry. Detect that case explicitly and
   // bypass the grid; mixed video/image phases still flow through the grid.
   const isSingleVideo =
     phase.images.length === 1 && phase.images[0]!.kind === 'mux';
 
+  // Auto "Phase NN" only for multi-phase projects. Single-section projects
+  // (e.g. a flat awards grid) leave the heading off entirely.
+  const labelText =
+    phase.label ?? (phaseCount > 1 ? `Phase ${String(index).padStart(2, '0')}` : null);
+  const showHeader = labelText !== null || phase.framing !== undefined;
+
   return (
     <div className="mb-24">
-      <div className="mono text-[10px] text-accent tracking-[0.18em] uppercase mb-2">
-        {phase.label ?? `Phase ${String(index).padStart(2, '0')}`}
-      </div>
-      <p
-        className="text-fg-90 mb-8"
-        style={{ fontSize: 18, lineHeight: 1.5, maxWidth: '40rem' }}
-      >
-        <Framing framing={phase.framing} />
-      </p>
+      {showHeader && (
+        <>
+          {labelText && (
+            <div className="mono text-[10px] text-accent tracking-[0.18em] uppercase mb-2">
+              {labelText}
+            </div>
+          )}
+          {phase.framing && (
+            <p
+              className="text-fg-90 mb-8"
+              style={{ fontSize: 18, lineHeight: 1.5, maxWidth: '40rem' }}
+            >
+              <Framing framing={phase.framing} />
+            </p>
+          )}
+        </>
+      )}
       {isSingleVideo ? (
         <SingleVideo media={phase.images[0] as Extract<Media, { kind: 'mux' }>} />
       ) : (
@@ -200,6 +227,7 @@ function SingleVideo({ media }: { media: Extract<Media, { kind: 'mux' }> }) {
  * styled to read inline (subtle underline, hover-accent for color).
  */
 function Framing({ framing }: { framing: Phase['framing'] }) {
+  if (!framing) return null;
   if (typeof framing === 'string') return <>{framing}</>;
   return (
     <>
@@ -284,14 +312,34 @@ function ImageCell({ media }: { media: Media }) {
       />
     );
   }
-  // Mux video cell — not used for placeholders, but the type allows it.
-  return (
-    <div
-      className="overflow-hidden"
-      style={{
-        aspectRatio: media.aspect ?? '16/9',
-        background: 'rgba(244,242,238,0.04)',
-      }}
-    />
-  );
+  if (media.kind === 'mux') {
+    // Inline Mux video tile inside the phase grid. Same playback options
+    // as the case-study hero (autoplay muted loop, no hotkeys, right-click
+    // suppressed). With masonry's break-inside: avoid, the video tile
+    // stays in a single column so its aspect ratio is preserved.
+    return (
+      <div
+        className="overflow-hidden shimmer"
+        style={{ aspectRatio: media.aspect ?? '16/9' }}
+        onContextMenu={(e) => e.preventDefault()}
+      >
+        <MuxPlayer
+          playbackId={media.playbackId}
+          streamType="on-demand"
+          autoPlay="muted"
+          muted
+          loop
+          playsInline
+          nohotkeys
+          metadata={{ video_title: media.alt ?? '' }}
+          style={{ width: '100%', height: '100%', display: 'block' }}
+        />
+      </div>
+    );
+  }
+
+  // 'scene' kind shouldn't appear inside a phase grid (it's hero-only),
+  // but the discriminated union covers it. Render nothing so the type
+  // check stays exhaustive.
+  return null;
 }
