@@ -13,8 +13,15 @@ export type Media =
   | { kind: 'mux'; playbackId: string; aspect?: string; alt?: string }
   | { kind: 'image'; src: string; aspect?: string; alt?: string };
 
+/**
+ * A phase's framing sentence. Either a plain string, or an array of
+ * segments where each segment is either a plain string or an inline link.
+ * The renderer in CaseStudyPhases stitches them together as one paragraph.
+ */
+export type FramingSegment = string | { text: string; href: string };
+
 export type Phase = {
-  framing: string;
+  framing: string | FramingSegment[];
   images: Media[];
 };
 
@@ -74,7 +81,7 @@ export const projects: Project[] = [
     phases: [
       {
         framing:
-          'Phase 01 — placeholder framing sentence describing the first stage of the work (research, exploration, pitch — whatever it actually was).',
+          'The goal was to establish an App Store showcasing editorialized 3D content, shining a spotlight on the first apps on the system. We landed on a simple approach that we could evolve over time, yet work with all crops.',
         images: [
           { kind: 'image', src: '/projects/apple-vision-pro/phase-01/01.jpg', aspect: '4/3' },
           { kind: 'image', src: '/projects/apple-vision-pro/phase-01/02.jpg', aspect: '3/4' },
@@ -85,7 +92,7 @@ export const projects: Project[] = [
       },
       {
         framing:
-          'Phase 02 — placeholder framing sentence for the second stage (development, key visuals, motion tests).',
+          'After the first 6 months, we dialed in our 3D home environments, defined screen layouts, and reworked the design of 3D icons in content.',
         images: [
           { kind: 'image', src: '/projects/apple-vision-pro/phase-02/01.jpg', aspect: '3/2' },
           { kind: 'image', src: '/projects/apple-vision-pro/phase-02/02.jpg', aspect: '1/1' },
@@ -95,8 +102,11 @@ export const projects: Project[] = [
         ],
       },
       {
-        framing:
-          'Phase 03 — placeholder framing sentence for the final stage (delivery, polish, BTS).',
+        framing: [
+          'After a year of Vision Pro, we worked with ',
+          { text: 'Someform', href: 'http://someform.studio/' },
+          ' studio to help evolve our systems, bringing in procedural platforms and color washes that could be shaped for all types of content.',
+        ],
         images: [
           { kind: 'image', src: '/projects/apple-vision-pro/phase-03/01.jpg', aspect: '4/3' },
           { kind: 'image', src: '/projects/apple-vision-pro/phase-03/02.jpg', aspect: '4/3' },

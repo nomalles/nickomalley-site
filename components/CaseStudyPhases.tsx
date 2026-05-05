@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import type { Phase, Media } from '@/lib/projects';
 
 async function sha256(s: string): Promise<string> {
@@ -138,7 +138,7 @@ function PhaseBlock({ index, phase }: { index: number; phase: Phase }) {
         className="text-fg-90 mb-8"
         style={{ fontSize: 18, lineHeight: 1.5, maxWidth: '40rem' }}
       >
-        {phase.framing}
+        <Framing framing={phase.framing} />
       </p>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {phase.images.map((img, i) => (
@@ -146,6 +146,36 @@ function PhaseBlock({ index, phase }: { index: number; phase: Phase }) {
         ))}
       </div>
     </div>
+  );
+}
+
+/**
+ * Stitch a Phase['framing'] into a paragraph. Plain string passes through;
+ * a segment array is mapped, with link segments rendered as new-tab anchors
+ * styled to read inline (subtle underline, hover-accent for color).
+ */
+function Framing({ framing }: { framing: Phase['framing'] }) {
+  if (typeof framing === 'string') return <>{framing}</>;
+  return (
+    <>
+      {framing.map((seg, i) => (
+        <Fragment key={i}>
+          {typeof seg === 'string' ? (
+            seg
+          ) : (
+            <a
+              href={seg.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover-accent"
+              style={{ textDecoration: 'underline', textUnderlineOffset: '3px' }}
+            >
+              {seg.text}
+            </a>
+          )}
+        </Fragment>
+      ))}
+    </>
   );
 }
 
