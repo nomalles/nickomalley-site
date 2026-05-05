@@ -403,6 +403,7 @@ export const projects: Project[] = [
         images: [
           { kind: 'mux', playbackId: 'FfxhW01WfDa00VfnYjqgubapgsLfk3YNbFFT00NLj4tg01E', aspect: '16/9', playback: 'user-with-sound' },
           { kind: 'mux', playbackId: 'm1Ok4TZVegE21po01O00qr5vUfw4s5tVsANujgasCFWZQ', aspect: '16/9' },
+          { kind: 'mux', playbackId: 'loX6ekDNbMiKXss2pj7lpYcFBUoN02RHc02z5fIMgGECo', aspect: '16/9' },
           { kind: 'image', src: '/projects/playstation/winTheCourt.gif', width: 1912, height: 1078 },
         ],
       },
