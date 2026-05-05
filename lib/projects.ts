@@ -111,6 +111,7 @@ export const projects: Project[] = [
     title: 'Vision Pro App Store',
     role: '3D Lead, Motion, AD',
     tint: ['#1d65f0', '#0a1f4a'],
+    thumbnail: '/projects/apple-vision-pro/thumbnail.PNG',
     hero: {
       kind: 'mux',
       playbackId: 'OtQYj2wu3jkXRHzbx00Hrn17Lf5nZQxtB3HGsKRc8Rdk',
@@ -191,6 +192,7 @@ export const projects: Project[] = [
     title: 'App Store Awards',
     role: 'AD',
     tint: ['#ffaa42', '#3a1f4a'],
+    thumbnail: '/projects/apple-app-awards/thumbnail.png',
     hero: {
       kind: 'mux',
       playbackId: 'nStn7ByAaOJnLCOKhUYsttlE01i01YL1zYjN4E9u9avwM',
