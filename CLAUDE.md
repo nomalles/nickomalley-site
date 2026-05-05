@@ -256,23 +256,83 @@ double-check the conditional blocks in `Scene3D.tsx`.
 
 ## Pages still to build
 
-- **`/work/[slug]`** — case study pages. Template should have:
-  - Slug header with client/project/year/role/type metadata block (Swiss style)
-  - Full-bleed hero video autoplay loop
-  - 2-3 sentence editorial paragraph (context, scale, contribution)
-  - Mixed media body (stills, looped clips, 3D turntables, BTS)
-  - Small mono credits block at end
-  - Slice-wipe transition into next project on scroll-end
 - **`/scraps`** — personal/experimental work (Nick's IG-style stuff).
   Should have a brief blurb at top explaining these are personal tests.
   Denser masonry-ish grid, mixed aspect ratios. Each item gets a small mono
   caption: format, year, tools (e.g. `scan / 2024 / polycam + r3f`).
 - **`/info`** — long-form about, client list, contact.
 
-When building these, KEEP THE 3D SCENE PERSISTENT. The scan should still be
-visible behind subsequent pages — likely shrunk into a corner viewport, or
-just continuing to fill the background. The site is one continuous workspace,
-not a series of pages.
+The 3D scene is currently still mounted only inside the homepage `Portfolio`
+component. The intent is for the scan to remain persistent across `/work/*`,
+`/scraps`, and `/info` (likely shrunk to a corner viewport on inner pages),
+but the case study template ships standalone for now. To make Scene3D
+persist, hoist the canvas out of `Portfolio` into a shared layout (or into
+a top-level "scene root" component) so navigating between routes doesn't
+unmount/remount it. Don't re-implement that without thinking through it —
+remounting the GLB load and the cube-camera pipeline on every nav would be
+a noticeable hit.
+
+---
+
+## Case study pages (`/work/[slug]`)
+
+Built. Lives at `app/work/[slug]/page.tsx`, statically generated via
+`generateStaticParams` from any project in `lib/projects.ts` that has a
+`hero` field. Slugs without a hero return 404.
+
+### Layout
+1. `← INDEX` back link (top-left, mono)
+2. Ultrawide (21:9) Mux player hero (`<CaseStudyHero>`)
+3. Two-column grid: Swiss-style metadata block (Client/Year/Role/Scope) on
+   the left, 2–3 sentence context paragraph on the right
+4. Phase blocks (`<CaseStudyPhases>`) — chronological stages, each with a
+   framing sentence + 3-column image grid with mixed aspect ratios.
+   Blurred behind a password gate when `passwordHash` is set.
+5. Small mono credits footer (team list + contribution notes)
+
+### Project data shape
+`lib/projects.ts` exports `Project` plus a `Media` discriminated union
+(`{ kind: 'mux', playbackId, aspect? }` or `{ kind: 'image', src, aspect?, alt? }`),
+plus `Phase` and `Credits` types. Case-study-specific fields (`hero`,
+`scope`, `context`, `phases`, `credits`, `passwordHash`) are all optional;
+projects without case study pages can stay slug-only.
+
+### Mux integration
+- **Library**: `@mux/mux-player-react` (installed). Lazy-loaded via
+  `next/dynamic` with `ssr: false` because the player is a web component
+  that needs `customElements`.
+- **Playback IDs are public** — they live in `lib/projects.ts` directly
+  (`hero.playbackId`). Don't put them in env vars.
+- **API tokens** (`MUX_TOKEN_ID` / `MUX_TOKEN_SECRET`) live in `.env.local`
+  (server-only, never `NEXT_PUBLIC_`-prefixed). Used for upload scripts
+  and asset queries — not for serving public videos.
+- Hero player is autoPlay + muted + loop + playsInline + nohotkeys, with
+  `onContextMenu` suppressed to hide the "Save Video As" menu. Determined
+  viewers can still grab the HLS stream from the network tab — this is
+  friction, not protection.
+- Uploads currently go through the Mux dashboard. If we add a CLI helper
+  later, drop it at `scripts/upload-mux.ts` and use the API token pair.
+
+### Password-gate pattern (`<CaseStudyPhases>`)
+- The phases stack is wrapped in `.phase-gate`, which is `filter: blur(24px)`
+  + `pointer-events: none` + `user-select: none` until `.unlocked` is added.
+  Filter transitions over 600ms cubic-bezier(0.65, 0, 0.35, 1) — the site's
+  canonical state-change easing.
+- Comparison is **client-side SHA-256** of the input vs `passwordHash` from
+  `projects.ts`. Use Web Crypto (`crypto.subtle.digest`) — no library.
+- Generate a hash with:
+  ```
+  node -e "console.log(require('crypto').createHash('sha256').update('YOURPASSWORD').digest('hex'))"
+  ```
+  Or `echo -n "YOURPASSWORD" | shasum -a 256` on macOS.
+- **Unlock state is persisted to `sessionStorage`** keyed by `unlock-<slug>`
+  so reloads / nav-and-back within the same tab keep the page open.
+  Closing the tab forgets it.
+- This is **polite gating, not security**. The hash is in the bundle and
+  brute-forceable for weak passwords; the playback URL is still extractable
+  from the network tab. Don't use this for anything that genuinely needs
+  to stay private — for that we'd switch the videos to Mux signed playback
+  + server-side JWT minting, and serve the page itself behind real auth.
 
 ---
 
