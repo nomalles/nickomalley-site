@@ -83,7 +83,6 @@ export default function WorkPage({ params }: { params: { slug: string } }) {
       {/* Phases (gated when passwordHash is set) */}
       {project.phases && project.phases.length > 0 && (
         <CaseStudyPhases
-          slug={project.slug}
           phases={project.phases}
           passwordHash={project.passwordHash}
         />

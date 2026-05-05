@@ -1,8 +1,18 @@
 'use client';
 
 import { Fragment, useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import type { Phase, Media } from '@/lib/projects';
+
+// Mux Player is heavy; only mount it on the client so the page itself can
+// stay static. Used for video media in phase grids (e.g. tool walkthroughs).
+const MuxPlayer = dynamic(() => import('@mux/mux-player-react'), { ssr: false });
+
+// Shared sessionStorage key — once any project's gate is unlocked, the
+// gating hash is stored here. Other projects that share the same hash
+// auto-unlock; projects with different hashes stay locked.
+const UNLOCK_KEY = 'phase-gate-hash';
 
 async function sha256(s: string): Promise<string> {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
@@ -12,7 +22,6 @@ async function sha256(s: string): Promise<string> {
 }
 
 type Props = {
-  slug: string;
   phases: Phase[];
   /** Omit to leave phases ungated. */
   passwordHash?: string;
@@ -30,7 +39,7 @@ type Props = {
  * bundle could still find the hash and brute-force a weak password.
  * Don't use this for anything that would actually need to stay private.
  */
-export default function CaseStudyPhases({ slug, phases, passwordHash }: Props) {
+export default function CaseStudyPhases({ phases, passwordHash }: Props) {
   const gated = !!passwordHash;
   const [unlocked, setUnlocked] = useState(!gated);
   const [password, setPassword] = useState('');
@@ -40,10 +49,13 @@ export default function CaseStudyPhases({ slug, phases, passwordHash }: Props) {
   useEffect(() => {
     if (!gated) return;
     if (typeof window === 'undefined') return;
-    if (sessionStorage.getItem(`unlock-${slug}`) === '1') {
+    // Cross-page unlock: if a previous page stored a hash that matches this
+    // project's hash, treat it as already unlocked. Different passwords on
+    // different projects still need their own unlocks.
+    if (sessionStorage.getItem(UNLOCK_KEY) === passwordHash) {
       setUnlocked(true);
     }
-  }, [gated, slug]);
+  }, [gated, passwordHash]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -52,7 +64,7 @@ export default function CaseStudyPhases({ slug, phases, passwordHash }: Props) {
     const hashed = await sha256(password);
     if (hashed === passwordHash) {
       setUnlocked(true);
-      sessionStorage.setItem(`unlock-${slug}`, '1');
+      sessionStorage.setItem(UNLOCK_KEY, passwordHash);
       setError(false);
     } else {
       setError(true);
@@ -130,6 +142,12 @@ export default function CaseStudyPhases({ slug, phases, passwordHash }: Props) {
 }
 
 function PhaseBlock({ index, phase }: { index: number; phase: Phase }) {
+  // A single-video phase reads better as a full-width hero than as one
+  // skinny column inside a 3-col masonry. Detect that case explicitly and
+  // bypass the grid; mixed video/image phases still flow through the grid.
+  const isSingleVideo =
+    phase.images.length === 1 && phase.images[0]!.kind === 'mux';
+
   return (
     <div className="mb-24">
       <div className="mono text-[10px] text-accent tracking-[0.18em] uppercase mb-2">
@@ -141,11 +159,37 @@ function PhaseBlock({ index, phase }: { index: number; phase: Phase }) {
       >
         <Framing framing={phase.framing} />
       </p>
-      <div className="phase-grid">
-        {phase.images.map((img, i) => (
-          <ImageCell key={i} media={img} />
-        ))}
-      </div>
+      {isSingleVideo ? (
+        <SingleVideo media={phase.images[0] as Extract<Media, { kind: 'mux' }>} />
+      ) : (
+        <div className="phase-grid">
+          {phase.images.map((img, i) => (
+            <ImageCell key={i} media={img} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SingleVideo({ media }: { media: Extract<Media, { kind: 'mux' }> }) {
+  return (
+    <div
+      className="overflow-hidden w-full"
+      style={{ aspectRatio: media.aspect ?? '16/9' }}
+      onContextMenu={(e) => e.preventDefault()}
+    >
+      <MuxPlayer
+        playbackId={media.playbackId}
+        streamType="on-demand"
+        autoPlay="muted"
+        muted
+        loop
+        playsInline
+        nohotkeys
+        metadata={{ video_title: media.alt ?? '' }}
+        style={{ width: '100%', height: '100%', display: 'block' }}
+      />
     </div>
   );
 }

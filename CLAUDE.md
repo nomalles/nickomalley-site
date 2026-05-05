@@ -291,12 +291,39 @@ Built. Lives at `app/work/[slug]/page.tsx`, statically generated via
 5. Small mono credits footer (team list + contribution notes)
 
 ### Project data shape
-`lib/projects.ts` exports `Project` plus a `Media` discriminated union
-(`{ kind: 'mux', playbackId, aspect? }` or
-`{ kind: 'image', src, aspect?, alt?, width?, height? }`), plus `Phase`
-and `Credits` types. Case-study-specific fields (`hero`, `scope`,
-`context`, `phases`, `credits`, `passwordHash`) are all optional;
-projects without case study pages can stay slug-only.
+`lib/projects.ts` exports `Project` plus a `Media` discriminated union with
+three kinds:
+- `{ kind: 'mux', playbackId, aspect? }` — Mux video
+- `{ kind: 'image', src, aspect?, alt?, width?, height? }` — static image
+- `{ kind: 'scene', scanPath, aspect? }` — interactive Three.js hero,
+  currently rendered by `Scene3DIcons`
+
+Plus `Phase` and `Credits` types. Case-study-specific fields (`hero`,
+`scope`, `context`, `phases`, `credits`, `passwordHash`) are all
+optional; projects without case study pages can stay slug-only.
+
+### Hero kinds
+- **Mux** (`kind: 'mux'`) — `<CaseStudyHero>` lazy-loads
+  `@mux/mux-player-react` and renders the player at the chosen aspect.
+  Default `21/9`, `--media-object-fit: cover` so 16:9 sources fill
+  ultrawide frames.
+- **Image** (`kind: 'image'`) — `<Image fill priority>` with
+  `sizes="100vw"`. Currently unused but kept type-honest.
+- **Scene** (`kind: 'scene'`) — interactive Three.js hero via
+  `<Scene3DIcons scanPath=...>`. Loads any GLB at `/scans/<file>.glb`,
+  auto-rotates, scan-line shader sweeps every 7.5s, and on each scan
+  completion **toggles the mesh material** between the source texture
+  and a neutral grey. No trails / no cube camera (lighter than the
+  homepage scene). Drag-to-orbit + two-finger touch input model
+  matches `Scene3D`.
+
+### Phase media
+Phases accept any Media in their `images: Media[]` array. The renderer
+detects:
+- **Single Mux item** → renders full-width via `<SingleVideo>` (looks
+  better than a skinny video in one masonry column)
+- **Mixed or image-only** → CSS-columns masonry on `md+`, single-column
+  stack on mobile
 
 ### Image optimization
 All case study images render through Next/Image. Two modes per cell:
@@ -349,9 +376,13 @@ For each new project:
   node -e "console.log(require('crypto').createHash('sha256').update('YOURPASSWORD').digest('hex'))"
   ```
   Or `echo -n "YOURPASSWORD" | shasum -a 256` on macOS.
-- **Unlock state is persisted to `sessionStorage`** keyed by `unlock-<slug>`
-  so reloads / nav-and-back within the same tab keep the page open.
-  Closing the tab forgets it.
+- **Unlock state is persisted to `sessionStorage`** under a single shared
+  key `phase-gate-hash`, with the *unlocked password's hash* as the value.
+  On mount, each project compares its own `passwordHash` against the
+  stored value — if they match, it auto-unlocks. Effect: projects sharing
+  the same password unlock together once any one is opened; projects with
+  a different password still need their own unlock. Closing the tab
+  forgets it.
 - This is **polite gating, not security**. The hash is in the bundle and
   brute-forceable for weak passwords; the playback URL is still extractable
   from the network tab. Don't use this for anything that genuinely needs

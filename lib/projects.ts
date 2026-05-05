@@ -24,6 +24,12 @@ export type Media =
        */
       width?: number;
       height?: number;
+    }
+  | {
+      /** Interactive Three.js hero — currently used by Scene3DIcons. */
+      kind: 'scene';
+      scanPath: string;
+      aspect?: string;
     };
 
 /**
@@ -153,6 +159,71 @@ export const projects: Project[] = [
     // SHA-256 of the literal string "placeholder". Replace this hash AND the
     // password before launch. To regenerate:
     //   node -e "console.log(require('crypto').createHash('sha256').update('YOURPASSWORD').digest('hex'))"
+    passwordHash: '4097889236a2af26c293033feb964c4cf118c0224e0d063fec0a89e9d0569ef2',
+  },
+  {
+    id: '0022a',
+    slug: 'apple-3d-icons',
+    year: '2022-2025',
+    client: 'Apple',
+    title: '3D Icons',
+    role: '3D Lead, AD',
+    tint: ['#3b82f6', '#0a1f4a'],
+    hero: {
+      kind: 'scene',
+      scanPath: '/scans/apple-3d-icons.glb',
+      aspect: '21/9',
+    },
+    context:
+      'Placeholder context paragraph for the 3D Icons project — replace with real copy describing scope, scale, and Nick’s contribution.',
+    phases: [
+      {
+        framing:
+          'Concepting — placeholder framing sentence describing the early exploration and system definition for the 3D icon language.',
+        images: [
+          { kind: 'image', src: '/projects/apple-3d-icons/Concepting/Blank_Angled-01.png', width: 1920, height: 1080 },
+          { kind: 'image', src: '/projects/apple-3d-icons/Concepting/Chiclet_Guides-thickness-ISO.png', width: 1920, height: 1080 },
+          { kind: 'image', src: '/projects/apple-3d-icons/Concepting/Chiclet_Guides_Apex.png', width: 1920, height: 1080 },
+          { kind: 'image', src: '/projects/apple-3d-icons/Concepting/Chiclet_Guides_CANVA-colors.png', width: 1920, height: 1080 },
+          { kind: 'image', src: '/projects/apple-3d-icons/Concepting/Moltres_Single_Angles.png', width: 1748, height: 1834 },
+          { kind: 'image', src: '/projects/apple-3d-icons/Concepting/Screen Shot 2022-10-05 at 3.21.03 PM.png', width: 2928, height: 1628 },
+          { kind: 'image', src: '/projects/apple-3d-icons/Concepting/Screenshot 2024-01-03 at 10.21.11 PM.png', width: 1572, height: 848 },
+          { kind: 'image', src: '/projects/apple-3d-icons/Concepting/UV-expand.png', width: 1104, height: 870 },
+        ],
+      },
+      {
+        framing:
+          'Usage — placeholder framing sentence describing how the icon system showed up across editorial layouts and product surfaces.',
+        images: [
+          { kind: 'image', src: '/projects/apple-3d-icons/Usage/IMG_0431.jpg', width: 1260, height: 2572 },
+          { kind: 'image', src: '/projects/apple-3d-icons/Usage/IMG_2159.PNG', width: 1170, height: 2532 },
+          { kind: 'image', src: '/projects/apple-3d-icons/Usage/IMG_4436.PNG', width: 1170, height: 2532 },
+          { kind: 'image', src: '/projects/apple-3d-icons/Usage/IMG_4744.PNG', width: 1206, height: 2622 },
+          { kind: 'image', src: '/projects/apple-3d-icons/Usage/IMG_4972.PNG', width: 1206, height: 2622 },
+          { kind: 'image', src: '/projects/apple-3d-icons/Usage/IMG_6145.PNG', width: 1170, height: 2532 },
+          { kind: 'image', src: '/projects/apple-3d-icons/Usage/IMG_8644.PNG', width: 1260, height: 2736 },
+          { kind: 'image', src: '/projects/apple-3d-icons/Usage/Screenshot 2025-02-12 at 12.08.45 PM.png', width: 1544, height: 1190 },
+        ],
+      },
+      {
+        framing:
+          'Tool — placeholder framing sentence describing the production tool that supported the icon program.',
+        images: [
+          // VERIFY: Nick gave this as the asset ID — confirm in the Mux
+          // dashboard that it's actually the *playback* ID. If not, swap
+          // for the playback ID listed under the asset's Playback IDs.
+          {
+            kind: 'mux',
+            playbackId: 'UVbVaezcuWK5DgqCqUbeWeSgaWRPhFtgkNT01psFQJFo',
+            aspect: '160/127',
+          },
+        ],
+      },
+    ],
+    credits: {
+      team: ['Placeholder — replace with real credit lines'],
+    },
+    // Same hash as Apple Vision Pro so unlocking one gates the other in.
     passwordHash: '4097889236a2af26c293033feb964c4cf118c0224e0d063fec0a89e9d0569ef2',
   },
   {

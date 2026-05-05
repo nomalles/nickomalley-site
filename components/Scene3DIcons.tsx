@@ -1,0 +1,332 @@
+'use client';
+
+import { useEffect, useRef } from 'react';
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
+
+export type Scene3DIconsProps = {
+  /** Path under /public to the .glb to load. */
+  scanPath: string;
+};
+
+/**
+ * Smaller cousin of Scene3D used as a case study hero.
+ *
+ *   - Loads any .glb, auto-centers and scales it to a fixed size
+ *   - Auto-rotates the model continuously (drag-to-orbit also supported,
+ *     including two-finger touch — same input model as Scene3D)
+ *   - HDRI environment (forest.exr) lighting, ACES tone mapping
+ *   - Scan-line shader sweep on a wireframe overlay (cyan #00F8FF)
+ *   - On each scan completion, toggles the mesh material between the
+ *     source texture and a neutral grey reveal so the scan reads as a
+ *     "tool inspecting the asset" moment
+ *
+ * No chrome trails, no cube camera, no shadow injection — those are
+ * scene-specific to the homepage trash hero. Keep this lighter so it
+ * runs comfortably alongside the rest of the case study page content.
+ */
+export default function Scene3DIcons({ scanPath }: Scene3DIconsProps) {
+  const mountRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const mount = mountRef.current;
+    if (!mount) return;
+
+    const w = mount.clientWidth;
+    const h = mount.clientHeight;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setClearColor(0x000000, 0);
+    renderer.setSize(w, h);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.62;
+    if ('outputColorSpace' in renderer && THREE.SRGBColorSpace !== undefined) {
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+    }
+    mount.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(34, w / h, 0.1, 100);
+    camera.position.set(0, 0.4, 4.6);
+    camera.lookAt(0, 0, 0);
+
+    // ---------- HDRI lighting ----------
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    pmrem.compileEquirectangularShader();
+    let envRT: THREE.WebGLRenderTarget | null = null;
+    new EXRLoader().load(
+      '/hdri/forest.exr',
+      (tex) => {
+        tex.mapping = THREE.EquirectangularReflectionMapping;
+        envRT = pmrem.fromEquirectangular(tex);
+        scene.environment = envRT.texture;
+        tex.dispose();
+        pmrem.dispose();
+      },
+      undefined,
+      (err) => console.error('HDRI load failed:', err)
+    );
+
+    // ---------- Object group ----------
+    const objectGroup = new THREE.Group();
+    scene.add(objectGroup);
+
+    // Scan-line shader — cyan band that sweeps the model's world Y axis.
+    const scanMat = new THREE.ShaderMaterial({
+      uniforms: {
+        uScanY: { value: 100.0 },
+        uScanWidth: { value: 0.18 },
+        uColor: { value: new THREE.Color(0x00f8ff) },
+      },
+      vertexShader: /* glsl */ `
+        varying vec3 vWorld;
+        void main() {
+          vec4 wp = modelMatrix * vec4(position, 1.0);
+          vWorld = wp.xyz;
+          gl_Position = projectionMatrix * viewMatrix * wp;
+        }
+      `,
+      fragmentShader: /* glsl */ `
+        uniform float uScanY;
+        uniform float uScanWidth;
+        uniform vec3 uColor;
+        varying vec3 vWorld;
+        void main() {
+          float d = abs(vWorld.y - uScanY);
+          float v = 1.0 - smoothstep(0.0, uScanWidth, d);
+          if (v < 0.01) discard;
+          gl_FragColor = vec4(uColor, v);
+        }
+      `,
+      transparent: true,
+      depthWrite: false,
+    });
+
+    let scanMin = -1;
+    let scanMax = 1;
+
+    // Texture-swap state: every scan completion toggles between the source
+    // material on each mesh and a neutral grey "reveal" material. We track
+    // the original materials per-mesh so multi-mesh GLBs all toggle in sync.
+    const originalMaterials = new Map<string, THREE.Material | THREE.Material[]>();
+    const greyMat = new THREE.MeshStandardMaterial({
+      color: 0x808080,
+      roughness: 0.55,
+      metalness: 0.0,
+    });
+    let isGrey = false;
+    function applyMaterial(grey: boolean) {
+      objectGroup.traverse((obj) => {
+        const m = obj as THREE.Mesh;
+        if (!m.isMesh) return;
+        const original = originalMaterials.get(m.uuid);
+        if (!original) return;
+        m.material = grey ? greyMat : original;
+      });
+    }
+
+    // ---------- Load the GLB ----------
+    const loader = new GLTFLoader();
+    loader.load(
+      scanPath,
+      (gltf) => {
+        // Compute combined bounding box so the entire scene (potentially
+        // many meshes) gets centered and scaled together.
+        const root = gltf.scene;
+        root.updateMatrixWorld(true);
+        const bbox = new THREE.Box3().setFromObject(root);
+        const size = new THREE.Vector3();
+        const center = new THREE.Vector3();
+        bbox.getSize(size);
+        bbox.getCenter(center);
+
+        // Translate the root so its bounding-box center sits at origin.
+        root.position.sub(center);
+        const maxExt = Math.max(size.x, size.y, size.z) || 1;
+        const targetSize = 2.4;
+        root.scale.setScalar(targetSize / maxExt);
+
+        // Capture per-mesh original materials and tag them as scan targets.
+        root.traverse((obj) => {
+          const m = obj as THREE.Mesh;
+          if (m.isMesh) {
+            originalMaterials.set(m.uuid, m.material);
+          }
+        });
+
+        objectGroup.add(root);
+
+        // After scaling, recompute the world-space Y range for the scan
+        // sweep so it covers the full vertical extent of the model.
+        objectGroup.updateMatrixWorld(true);
+        const finalBox = new THREE.Box3().setFromObject(objectGroup);
+        scanMin = finalBox.min.y - 0.1;
+        scanMax = finalBox.max.y + 0.1;
+
+        // Wireframe overlay carrying the scan-line shader. We build it
+        // from a flattened version of all mesh geometries so the shader
+        // sees one continuous mesh.
+        const wireGroup = new THREE.Group();
+        root.traverse((obj) => {
+          const m = obj as THREE.Mesh;
+          if (m.isMesh && m.geometry) {
+            const wireGeo = new THREE.WireframeGeometry(m.geometry);
+            const wireLines = new THREE.LineSegments(wireGeo, scanMat);
+            // Match the mesh's local transform so the wireframe sits on top.
+            wireLines.applyMatrix4(m.matrixWorld.clone().premultiply(root.matrixWorld.clone().invert()));
+            wireGroup.add(wireLines);
+          }
+        });
+        objectGroup.add(wireGroup);
+      },
+      undefined,
+      (err) => console.error('GLB load failed:', err)
+    );
+
+    // ---------- Drag-to-orbit (matches Scene3D's input model) ----------
+    let isDragging = false;
+    const prev = { x: 0, y: 0 };
+    let targetRotY = 0, currentRotY = 0;
+    let targetRotX = 0, currentRotX = 0;
+
+    type PS = { x: number; y: number; type: string };
+    const activePointers = new Map<number, PS>();
+    const need = (t: string) => (t === 'touch' ? 2 : 1);
+    const mid = () => {
+      let sx = 0, sy = 0;
+      activePointers.forEach((p) => { sx += p.x; sy += p.y; });
+      const n = Math.max(activePointers.size, 1);
+      return { x: sx / n, y: sy / n };
+    };
+
+    const onDown = (e: PointerEvent) => {
+      activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY, type: e.pointerType });
+      if (!isDragging && activePointers.size >= need(e.pointerType)) {
+        isDragging = true;
+        const m = mid();
+        prev.x = m.x; prev.y = m.y;
+        if (e.pointerType !== 'touch') mount.setPointerCapture(e.pointerId);
+      }
+    };
+    const onMove = (e: PointerEvent) => {
+      if (activePointers.has(e.pointerId)) {
+        activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY, type: e.pointerType });
+      }
+      if (!isDragging) return;
+      const m = mid();
+      const dx = m.x - prev.x;
+      const dy = m.y - prev.y;
+      targetRotY += dx * 0.008;
+      targetRotX = Math.max(-0.7, Math.min(0.7, targetRotX + dy * 0.008));
+      prev.x = m.x; prev.y = m.y;
+    };
+    const onUp = (e: PointerEvent) => {
+      activePointers.delete(e.pointerId);
+      if (isDragging) {
+        if (activePointers.size < need(e.pointerType)) isDragging = false;
+        else { const m = mid(); prev.x = m.x; prev.y = m.y; }
+      }
+      try { mount.releasePointerCapture(e.pointerId); } catch {}
+    };
+
+    mount.addEventListener('pointerdown', onDown);
+    mount.addEventListener('pointermove', onMove);
+    mount.addEventListener('pointerup', onUp);
+    mount.addEventListener('pointercancel', onUp);
+    const blockMulti = (ev: TouchEvent) => { if (ev.touches.length >= 2) ev.preventDefault(); };
+    const blockGesture = (ev: Event) => ev.preventDefault();
+    mount.addEventListener('touchstart', blockMulti, { passive: false });
+    mount.addEventListener('touchmove', blockMulti, { passive: false });
+    mount.addEventListener('gesturestart', blockGesture as EventListener);
+    mount.addEventListener('gesturechange', blockGesture as EventListener);
+    mount.addEventListener('gestureend', blockGesture as EventListener);
+
+    const onResize = () => {
+      const w2 = mount.clientWidth, h2 = mount.clientHeight;
+      camera.aspect = w2 / h2;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w2, h2);
+    };
+    window.addEventListener('resize', onResize);
+
+    // ---------- Animate ----------
+    let frameId = 0;
+    let scanTime = 0;
+    let lastTime = performance.now();
+    let scanWasActive = false;
+
+    const animate = () => {
+      frameId = requestAnimationFrame(animate);
+      const now = performance.now();
+      const dt = Math.min((now - lastTime) / 1000, 0.05);
+      lastTime = now;
+      scanTime += dt;
+
+      if (!isDragging) {
+        targetRotY += dt * 0.18;
+        targetRotX += (0 - targetRotX) * dt * 0.6;
+      }
+      currentRotY += (targetRotY - currentRotY) * 0.1;
+      currentRotX += (targetRotX - currentRotX) * 0.1;
+      objectGroup.rotation.y = currentRotY;
+      objectGroup.rotation.x = currentRotX;
+
+      // Scan cycle — same period/duration as the homepage scene so the
+      // scan moments feel consistent across the site.
+      const PERIOD = 7.5;
+      const DUR = 2.2;
+      const phase = scanTime % PERIOD;
+      const isActive = phase < DUR;
+      if (isActive !== scanWasActive) {
+        scanWasActive = isActive;
+        // On the falling edge (scan finishing), toggle materials. The user
+        // sees: scan band sweeps with material A, completes, material B
+        // is revealed. Next scan ~5s later toggles back.
+        if (!isActive) {
+          isGrey = !isGrey;
+          applyMaterial(isGrey);
+        }
+      }
+      if (isActive) {
+        const t = phase / DUR;
+        const eased = 1 - Math.pow(1 - t, 2.4);
+        scanMat.uniforms.uScanY.value = scanMin + eased * (scanMax - scanMin);
+      } else {
+        scanMat.uniforms.uScanY.value = 100;
+      }
+
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      window.removeEventListener('resize', onResize);
+      mount.removeEventListener('pointerdown', onDown);
+      mount.removeEventListener('pointermove', onMove);
+      mount.removeEventListener('pointerup', onUp);
+      mount.removeEventListener('pointercancel', onUp);
+      mount.removeEventListener('touchstart', blockMulti);
+      mount.removeEventListener('touchmove', blockMulti);
+      mount.removeEventListener('gesturestart', blockGesture as EventListener);
+      mount.removeEventListener('gesturechange', blockGesture as EventListener);
+      mount.removeEventListener('gestureend', blockGesture as EventListener);
+      if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
+      scanMat.dispose();
+      greyMat.dispose();
+      if (envRT) envRT.dispose();
+      scene.environment = null;
+      renderer.dispose();
+    };
+  }, [scanPath]);
+
+  return (
+    <div
+      ref={mountRef}
+      className="w-full h-full"
+      style={{ pointerEvents: 'auto', touchAction: 'pan-y' }}
+    />
+  );
+}

@@ -9,6 +9,10 @@ import type { Media } from '@/lib/projects';
 // rendered for SEO.
 const MuxPlayer = dynamic(() => import('@mux/mux-player-react'), { ssr: false });
 
+// Scene3DIcons pulls in three.js + GLB + EXR loaders — keep it out of the
+// initial bundle and out of SSR since it needs WebGL.
+const Scene3DIcons = dynamic(() => import('./Scene3DIcons'), { ssr: false });
+
 type Props = {
   hero: Media;
   title: string;
@@ -35,6 +39,17 @@ export default function CaseStudyHero({ hero, title }: Props) {
           sizes="100vw"
           className="object-cover"
         />
+      </div>
+    );
+  }
+
+  if (hero.kind === 'scene') {
+    return (
+      <div
+        className="overflow-hidden w-full relative"
+        style={{ aspectRatio: hero.aspect ?? '21/9' }}
+      >
+        <Scene3DIcons scanPath={hero.scanPath} />
       </div>
     );
   }
