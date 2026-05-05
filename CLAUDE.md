@@ -292,10 +292,34 @@ Built. Lives at `app/work/[slug]/page.tsx`, statically generated via
 
 ### Project data shape
 `lib/projects.ts` exports `Project` plus a `Media` discriminated union
-(`{ kind: 'mux', playbackId, aspect? }` or `{ kind: 'image', src, aspect?, alt? }`),
-plus `Phase` and `Credits` types. Case-study-specific fields (`hero`,
-`scope`, `context`, `phases`, `credits`, `passwordHash`) are all optional;
+(`{ kind: 'mux', playbackId, aspect? }` or
+`{ kind: 'image', src, aspect?, alt?, width?, height? }`), plus `Phase`
+and `Credits` types. Case-study-specific fields (`hero`, `scope`,
+`context`, `phases`, `credits`, `passwordHash`) are all optional;
 projects without case study pages can stay slug-only.
+
+### Image optimization
+All case study images render through Next/Image. Two modes per cell:
+- **`aspect` set** → cell locked to that ratio, image fills via
+  `<Image fill>` + `object-cover` (will crop). Use for uniform tile
+  grids.
+- **`aspect` omitted** → cell takes the image's natural height; no crop.
+  Requires `width` and `height` on the Media so Next can reserve
+  layout space and pick the right size from the responsive srcset.
+
+Source files live uncompressed in `public/projects/<slug>/...`; Vercel
+generates WebP/AVIF at responsive sizes on first request and caches at
+the edge. The `sizes` prop on each cell is `(max-width: 768px) 100vw,
+33vw` to match the 3-col grid.
+
+For each new project:
+1. Drop image files under `public/projects/<slug>/phase-N/` (any
+   filename — non-ASCII characters like U+202F from macOS Screenshot
+   should be normalized to ASCII first).
+2. Run `node scripts/measure-images.mjs public/projects/<slug>/phase-N`
+   to print Media-shaped entries (`{ kind: 'image', src, width, height }`)
+   ready to paste into the project's `phases[].images` array.
+3. Commit the images and the updated `lib/projects.ts`.
 
 ### Mux integration
 - **Library**: `@mux/mux-player-react` (installed). Lazy-loaded via

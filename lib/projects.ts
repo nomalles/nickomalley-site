@@ -11,7 +11,20 @@
 
 export type Media =
   | { kind: 'mux'; playbackId: string; aspect?: string; alt?: string }
-  | { kind: 'image'; src: string; aspect?: string; alt?: string };
+  | {
+      kind: 'image';
+      src: string;
+      /** When present, cell is locked to this ratio + object-cover crop. */
+      aspect?: string;
+      alt?: string;
+      /**
+       * Source dimensions in pixels. Required when `aspect` is omitted so
+       * Next/Image can reserve layout space and serve a responsive srcset.
+       * Use `npx tsx scripts/measure-images.ts <folder>` to generate values.
+       */
+      width?: number;
+      height?: number;
+    };
 
 /**
  * A phase's framing sentence. Either a plain string, or an array of
@@ -83,32 +96,32 @@ export const projects: Project[] = [
         framing:
           'The goal was to establish an App Store showcasing editorialized 3D content, shining a spotlight on the first apps on the system. We landed on a simple approach that we could evolve over time, yet work with all crops.',
         images: [
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-01/Arcade_ServiceValue_0111.png' },
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-01/ForeFlightVoyager-Hero.png' },
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-01/IMG_0203.PNG' },
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-01/IMG_0205.PNG' },
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-01/IMG_0208.PNG' },
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-01/IMG_0209.PNG' },
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-01/IMG_0217_edited.jpg' },
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-01/LiveSurface-QuickTake_cropping-01.png' },
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-01/Lungy-QuickTake.png' },
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-01/SDS34-AS-WW-Numerics-QuickTake.png' },
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-01/TouchDesk_6K_CC-02.png' },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-01/Arcade_ServiceValue_0111.png', width: 3840, height: 2160 },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-01/ForeFlightVoyager-Hero.png', width: 2432, height: 1538 },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-01/IMG_0203.PNG', width: 1920, height: 1080 },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-01/IMG_0205.PNG', width: 1390, height: 792 },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-01/IMG_0208.PNG', width: 515, height: 748 },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-01/IMG_0209.PNG', width: 1494, height: 846 },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-01/IMG_0217_edited.jpg', width: 1658, height: 933 },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-01/LiveSurface-QuickTake_cropping-01.png', width: 3840, height: 2160 },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-01/Lungy-QuickTake.png', width: 2048, height: 2732 },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-01/SDS34-AS-WW-Numerics-QuickTake.png', width: 2048, height: 2732 },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-01/TouchDesk_6K_CC-02.png', width: 2494, height: 1429 },
         ],
       },
       {
         framing:
           'After the first 6 months, we dialed in our 3D home environments, defined screen layouts, and reworked the design of 3D icons in content.',
         images: [
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-02/Jigspace_LivingRoom_Reg-02.png' },
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-02/Keynote_Office_5Kwide.png' },
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-02/Redbull-02.png' },
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-02/Screenshot 2025-03-27 at 12.06.55 PM.png' },
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-02/Screenshot 2025-04-03 at 2.38.44 PM.png' },
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-02/Screenshot 2026-05-05 at 13.23.11.png' },
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-02/Screenshot 2026-05-05 at 13.24.00.png' },
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-02/Screenshot 2026-05-05 at 13.24.54.png' },
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-02/Screenshot 2026-05-05 at 13.25.31.png' },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-02/Jigspace_LivingRoom_Reg-02.png', width: 3840, height: 2160 },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-02/Keynote_Office_5Kwide.png', width: 5000, height: 2812 },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-02/Redbull-02.png', width: 1080, height: 1080 },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-02/Screenshot 2025-03-27 at 12.06.55 PM.png', width: 1416, height: 1898 },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-02/Screenshot 2025-04-03 at 2.38.44 PM.png', width: 4506, height: 954 },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-02/Screenshot 2026-05-05 at 13.23.11.png', width: 2014, height: 756 },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-02/Screenshot 2026-05-05 at 13.24.00.png', width: 1988, height: 1218 },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-02/Screenshot 2026-05-05 at 13.24.54.png', width: 2016, height: 628 },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-02/Screenshot 2026-05-05 at 13.25.31.png', width: 1998, height: 1210 },
         ],
       },
       {
@@ -118,15 +131,15 @@ export const projects: Project[] = [
           ' studio to help evolve our systems, bringing in procedural platforms and color washes that could be shaped for all types of content.',
         ],
         images: [
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-03/Architecture_blank_03.png' },
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-03/BS169-AS-WW-Gucci.png' },
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-03/PicklePro_FirstLook.png' },
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-03/Screenshot 2025-04-03 at 11.46.08 AM.png' },
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-03/Screenshot 2025-04-03 at 11.54.39 AM.png' },
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-03/Screenshot 2026-05-04 at 22.58.33.png' },
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-03/Screenshot 2026-05-05 at 13.19.09.png' },
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-03/Screenshot 2026-05-05 at 13.27.46.png' },
-          { kind: 'image', src: '/projects/apple-vision-pro/phase-03/Screenshot 2026-05-05 at 13.37.12.png' },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-03/Architecture_blank_03.png', width: 2048, height: 2732 },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-03/BS169-AS-WW-Gucci.png', width: 3840, height: 2160 },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-03/PicklePro_FirstLook.png', width: 3840, height: 2160 },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-03/Screenshot 2025-04-03 at 11.46.08 AM.png', width: 1932, height: 1078 },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-03/Screenshot 2025-04-03 at 11.54.39 AM.png', width: 2338, height: 1620 },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-03/Screenshot 2026-05-04 at 22.58.33.png', width: 2010, height: 702 },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-03/Screenshot 2026-05-05 at 13.19.09.png', width: 2304, height: 1388 },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-03/Screenshot 2026-05-05 at 13.27.46.png', width: 2024, height: 1552 },
+          { kind: 'image', src: '/projects/apple-vision-pro/phase-03/Screenshot 2026-05-05 at 13.37.12.png', width: 1930, height: 1098 },
         ],
       },
     ],

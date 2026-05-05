@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import Image from 'next/image';
 import type { Media } from '@/lib/projects';
 
 // Mux Player is a heavy web component and needs the DOM to register itself —
@@ -23,14 +24,16 @@ export default function CaseStudyHero({ hero, title }: Props) {
   if (hero.kind === 'image') {
     return (
       <div
-        className="overflow-hidden w-full"
+        className="overflow-hidden w-full relative"
         style={{ aspectRatio: hero.aspect ?? '21/9' }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={hero.src}
           alt={hero.alt ?? title}
-          className="w-full h-full object-cover"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
         />
       </div>
     );

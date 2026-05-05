@@ -1,6 +1,7 @@
 'use client';
 
 import { Fragment, useEffect, useState } from 'react';
+import Image from 'next/image';
 import type { Phase, Media } from '@/lib/projects';
 
 async function sha256(s: string): Promise<string> {
@@ -179,46 +180,66 @@ function Framing({ framing }: { framing: Phase['framing'] }) {
   );
 }
 
+// `sizes` tells the browser which slot the image occupies so it can pick the
+// right size from the responsive srcset Next/Image generates. Matches the
+// grid: 100vw on mobile (1 col), ~33vw on md+ (3 cols).
+const CELL_SIZES = '(max-width: 768px) 100vw, 33vw';
+
 function ImageCell({ media }: { media: Media }) {
   if (media.kind === 'image') {
     // Two modes:
     //   - aspect set → cell is locked to that ratio, image fills via cover
-    //     (will crop). Useful when uniform tiles are wanted.
+    //     using <Image fill>. Useful when uniform tiles are wanted.
     //   - aspect omitted → cell sizes to image's natural height; no crop.
-    //     Combined with align-items: start on the parent grid this gives
-    //     a Swiss-leaning gappy layout that respects each image's source.
+    //     Requires width/height so Next can reserve layout space and pick
+    //     responsive sizes. Falls back to a plain placeholder if dims are
+    //     missing.
     if (media.aspect) {
       return (
         <div
-          className="overflow-hidden"
+          className="overflow-hidden relative"
           style={{
             aspectRatio: media.aspect,
             background: 'rgba(244,242,238,0.04)',
           }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={media.src}
             alt={media.alt ?? ''}
-            className="w-full h-full object-cover"
-            loading="lazy"
+            fill
+            sizes={CELL_SIZES}
+            className="object-cover"
           />
         </div>
       );
     }
+    if (media.width && media.height) {
+      return (
+        <div
+          className="overflow-hidden"
+          style={{ background: 'rgba(244,242,238,0.04)' }}
+        >
+          <Image
+            src={media.src}
+            alt={media.alt ?? ''}
+            width={media.width}
+            height={media.height}
+            sizes={CELL_SIZES}
+            className="w-full h-auto block"
+          />
+        </div>
+      );
+    }
+    // Final fallback — no aspect, no dims. Render an empty cell rather than
+    // a broken image. Should never happen if data is populated correctly.
     return (
       <div
         className="overflow-hidden"
-        style={{ background: 'rgba(244,242,238,0.04)' }}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={media.src}
-          alt={media.alt ?? ''}
-          className="w-full h-auto block"
-          loading="lazy"
-        />
-      </div>
+        style={{
+          aspectRatio: '4/3',
+          background: 'rgba(244,242,238,0.04)',
+        }}
+      />
     );
   }
   // Mux video cell — not used for placeholders, but the type allows it.
