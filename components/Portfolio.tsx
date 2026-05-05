@@ -4,7 +4,6 @@ import { useCallback, useState } from 'react';
 import Scene3D from './Scene3D';
 import Header from './Header';
 import BackgroundWordmark from './BackgroundWordmark';
-import CustomCursor from './CustomCursor';
 import ProjectList from './ProjectList';
 
 /**
@@ -37,8 +36,6 @@ export default function Portfolio() {
 
   return (
     <div style={{ position: 'relative', minHeight: '100vh', width: '100%' }}>
-      <CustomCursor />
-
       <BackgroundWordmark />
 
       {/* Fixed full-viewport 3D scene */}

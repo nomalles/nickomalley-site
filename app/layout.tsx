@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { IBM_Plex_Sans, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
+import CustomCursor from '@/components/CustomCursor';
 
 const plexSans = IBM_Plex_Sans({
   subsets: ['latin'],
@@ -50,7 +51,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${plexSans.variable} ${plexMono.variable}`}>
-      <body>{children}</body>
+      <body>
+        {/* CustomCursor lives at the layout level so the green-dot cursor
+            persists across every route (globals.css hides the system
+            cursor site-wide, so without this, inner pages have no cursor
+            at all). */}
+        <CustomCursor />
+        {children}
+      </body>
     </html>
   );
 }
