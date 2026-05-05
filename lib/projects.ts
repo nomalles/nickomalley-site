@@ -434,6 +434,41 @@ export const projects: Project[] = [
     tint: ['#3a4a55', '#0c1014'],
   },
   {
+    id: '0018a',
+    slug: 'twitch-rivals-broadcast',
+    year: '2020-2021',
+    client: 'Twitch',
+    title: 'Twitch Rivals Broadcast',
+    role: 'Motion Designer',
+    studio: 'Esports Engine',
+    tint: ['#9147ff', '#0e0e10'],
+    hero: {
+      kind: 'mux',
+      playbackId: 'bNeFRP2K33Fodsz00mKMMzkN02aCImaNWh00I48pflFJpA',
+      aspect: '21/9',
+    },
+    context:
+      'Motion Design for various Twitch Rivals esports broadcasts, including a full redesign of their main stream graphics. Designed to work with data from vMix.',
+    phases: [
+      {
+        label: 'Transitions + Overlays',
+        images: [
+          { kind: 'image', src: '/projects/twitch/DBD_wipe_02.gif', width: 1500, height: 843 },
+          { kind: 'image', src: '/projects/twitch/DBD_wipe_03.gif', width: 1500, height: 843 },
+          { kind: 'image', src: '/projects/twitch/FS_Fortnite_Scoring.png', width: 1920, height: 1080 },
+          { kind: 'image', src: '/projects/twitch/Format_Anims.gif', width: 1500, height: 786 },
+          { kind: 'image', src: '/projects/twitch/Format_Day02_p1.png', width: 1920, height: 1080 },
+          { kind: 'image', src: '/projects/twitch/Master Chips Ref_v02.png', width: 1920, height: 1080 },
+          { kind: 'image', src: '/projects/twitch/TR_Trackmania_Tires_opt01.gif', width: 1500, height: 843 },
+          { kind: 'image', src: '/projects/twitch/Template_Draft.gif', width: 1500, height: 840 },
+          { kind: 'image', src: '/projects/twitch/WR_Wipe_02.gif', width: 1500, height: 843 },
+          { kind: 'image', src: '/projects/twitch/WR_Wipe_diagonal.gif', width: 1500, height: 843 },
+        ],
+      },
+    ],
+    // No passwordHash — public.
+  },
+  {
     id: '0018',
     slug: 'grammy-mono-to-immersive',
     year: '2019',
