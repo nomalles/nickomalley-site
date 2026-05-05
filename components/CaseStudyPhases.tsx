@@ -140,7 +140,7 @@ function PhaseBlock({ index, phase }: { index: number; phase: Phase }) {
       >
         <Framing framing={phase.framing} />
       </p>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
         {phase.images.map((img, i) => (
           <ImageCell key={i} media={img} />
         ))}
@@ -181,19 +181,41 @@ function Framing({ framing }: { framing: Phase['framing'] }) {
 
 function ImageCell({ media }: { media: Media }) {
   if (media.kind === 'image') {
+    // Two modes:
+    //   - aspect set → cell is locked to that ratio, image fills via cover
+    //     (will crop). Useful when uniform tiles are wanted.
+    //   - aspect omitted → cell sizes to image's natural height; no crop.
+    //     Combined with align-items: start on the parent grid this gives
+    //     a Swiss-leaning gappy layout that respects each image's source.
+    if (media.aspect) {
+      return (
+        <div
+          className="overflow-hidden"
+          style={{
+            aspectRatio: media.aspect,
+            background: 'rgba(244,242,238,0.04)',
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={media.src}
+            alt={media.alt ?? ''}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+        </div>
+      );
+    }
     return (
       <div
         className="overflow-hidden"
-        style={{
-          aspectRatio: media.aspect ?? '4/3',
-          background: 'rgba(244,242,238,0.04)',
-        }}
+        style={{ background: 'rgba(244,242,238,0.04)' }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={media.src}
           alt={media.alt ?? ''}
-          className="w-full h-full object-cover"
+          className="w-full h-auto block"
           loading="lazy"
         />
       </div>
