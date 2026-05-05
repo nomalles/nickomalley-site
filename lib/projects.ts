@@ -434,6 +434,51 @@ export const projects: Project[] = [
     tint: ['#3a4a55', '#0c1014'],
   },
   {
+    id: '0018b',
+    slug: 'warner-media-lobby',
+    year: '2019-2020',
+    client: 'WarnerMedia',
+    title: 'Lobby Installation',
+    role: '3D + Motion Designer',
+    studio: 'Gensler',
+    tint: ['#1a4ba0', '#0c1530'],
+    hero: {
+      kind: 'mux',
+      playbackId: 'x6CKlZLvxu02WgrI1zGXJmg3dQI8JZsqRsz013RN601D02k',
+      aspect: '16/9',
+    },
+    context:
+      'Installation and Content Design for WarnerMedia’s lobby at the Culver City train station. The challenge was crafting something that communicated the brand while spotlighting content beyond a rectangle.',
+    phases: [
+      {
+        label: 'Concepting',
+        images: [
+          { kind: 'image', src: '/projects/warner-media/concepting/Screen Shot 2019-12-10 at 1.56.57 PM.png', width: 3174, height: 1882 },
+          { kind: 'image', src: '/projects/warner-media/concepting/Screen Shot 2019-12-10 at 2.07.49 PM.png', width: 3154, height: 2104 },
+          { kind: 'image', src: '/projects/warner-media/concepting/Screen Shot 2019-12-10 at 2.35.23 PM.png', width: 2202, height: 1216 },
+          { kind: 'mux', playbackId: 'xtU00Pn2S6qeuI301an57hJFMlbuXtNk1wuk4FYQbDUdM', aspect: '16/9' },
+          { kind: 'image', src: '/projects/warner-media/concepting/Screen Shot 2020-06-26 at 12.34.41 PM.png', width: 3346, height: 1524 },
+          { kind: 'image', src: '/projects/warner-media/concepting/Screen Shot 2020-06-26 at 12.39.57 PM.png', width: 3488, height: 1602 },
+        ],
+      },
+      {
+        label: 'Content Testing',
+        images: [
+          { kind: 'image', src: '/projects/warner-media/content/image83.gif', width: 800, height: 449 },
+          { kind: 'image', src: '/projects/warner-media/content/image84.gif', width: 800, height: 450 },
+          { kind: 'image', src: '/projects/warner-media/content/image85.png', width: 3602, height: 1952 },
+          { kind: 'mux', playbackId: 'REdfclaVhWMrMxXhNUjyAEP63s8UbOIA3rVPo9MsuIU', aspect: '16/9' },
+          { kind: 'image', src: '/projects/warner-media/content/image88.jpg', width: 4121, height: 1080 },
+          { kind: 'image', src: '/projects/warner-media/content/image89.png', width: 892, height: 1616 },
+          { kind: 'image', src: '/projects/warner-media/content/image92.png', width: 1920, height: 1080 },
+          { kind: 'image', src: '/projects/warner-media/content/warnermedia.gif', width: 800, height: 450 },
+          { kind: 'image', src: '/projects/warner-media/content/wmghibli.png', width: 2958, height: 1652 },
+        ],
+      },
+    ],
+    // No passwordHash — public.
+  },
+  {
     id: '0018a',
     slug: 'twitch-rivals-broadcast',
     year: '2020-2021',
