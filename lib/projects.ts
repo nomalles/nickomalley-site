@@ -381,6 +381,50 @@ export const projects: Project[] = [
     tint: ['#1f4ec2', '#070a1a'],
   },
   {
+    id: '0020b',
+    slug: 'playstation-tournaments',
+    year: '2021-2022',
+    client: 'Playstation',
+    title: 'Playstation Tournaments',
+    role: 'Motion Designer',
+    studio: 'Jellyfish',
+    tint: ['#0070d1', '#000000'],
+    hero: {
+      kind: 'mux',
+      playbackId: 'wl1KfiDQALyV1Bo7uW3wJg5cQgCB9Zo00jKL34zPkaRA',
+      aspect: '21/9',
+    },
+    context:
+      'Motion Design for Playstation Tournaments promotional videos + motion templates for live broadcasts and social media material.',
+    phases: [
+      {
+        label: 'Promotional Videos',
+        columns: 2,
+        images: [
+          { kind: 'mux', playbackId: 'FfxhW01WfDa00VfnYjqgubapgsLfk3YNbFFT00NLj4tg01E', aspect: '16/9', playback: 'user-with-sound' },
+          { kind: 'mux', playbackId: 'Q9Shxppd1RgBJ202AM4wU0201rSRAtg2NUcIFB9o1q00lOA', aspect: '16/9', playback: 'user-with-sound' },
+          { kind: 'mux', playbackId: 'm1Ok4TZVegE21po01O00qr5vUfw4s5tVsANujgasCFWZQ', aspect: '16/9' },
+          { kind: 'image', src: '/projects/playstation/winTheCourt.gif', width: 1912, height: 1078 },
+        ],
+      },
+      {
+        label: 'Broadcast Template',
+        images: [
+          { kind: 'mux', playbackId: 'Q9Shxppd1RgBJ202AM4wU0201rSRAtg2NUcIFB9o1q00lOA', aspect: '16/9', playback: 'user-with-sound' },
+        ],
+      },
+      {
+        label: 'Misc.',
+        columns: 2,
+        images: [
+          { kind: 'mux', playbackId: 'qSfoe1cK01Iwc001jjyvtbi6XlFNpXmC81L8p5LdkpuMk', aspect: '16/9' },
+          { kind: 'image', src: '/projects/playstation/SummerWinning_PromoAsset_16x9_choppy.gif', width: 1280, height: 720 },
+        ],
+      },
+    ],
+    // No passwordHash — public.
+  },
+  {
     id: '0019',
     slug: 'gensler-experiential',
     year: '2021',
