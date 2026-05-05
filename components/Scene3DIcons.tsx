@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
 
 export type Scene3DIconsProps = {
@@ -191,7 +192,12 @@ export default function Scene3DIcons({ scanPath }: Scene3DIconsProps) {
     }
 
     // ---------- Load the GLB ----------
+    // DRACO support so this scene can also serve compressed GLBs (works
+    // unchanged for non-Draco files like the current apple-3d-icons.glb).
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
     const loader = new GLTFLoader();
+    loader.setDRACOLoader(dracoLoader);
     loader.load(
       scanPath,
       (gltf) => {
@@ -379,6 +385,7 @@ export default function Scene3DIcons({ scanPath }: Scene3DIconsProps) {
       if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
       scanMat.dispose();
       if (envRT) envRT.dispose();
+      dracoLoader.dispose();
       scene.environment = null;
       renderer.dispose();
     };

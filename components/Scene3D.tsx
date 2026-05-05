@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
 
 type Stats = { fps: number; tris: number };
@@ -169,7 +170,13 @@ export default function Scene3D({
     // ------------------------------------------------------------------
     // Load the photogrammetry scan
     // ------------------------------------------------------------------
+    // DRACO decoder for compressed-mesh GLBs. Pulled from Google's
+    // gstatic CDN (cached across origins; no impact on app bundle).
+    // Non-Draco GLBs still load through the same GLTFLoader unchanged.
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
     const loader = new GLTFLoader();
+    loader.setDRACOLoader(dracoLoader);
     loader.load(
       scanPath,
       (gltf) => {
@@ -598,6 +605,7 @@ export default function Scene3D({
       scanMat.dispose();
       if (envRT) envRT.dispose();
       scene.environment = null;
+      dracoLoader.dispose();
       renderer.dispose();
     };
   }, [scanPath, onStats, onCoords, onScanActive]);
