@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { projects, type Project } from '@/lib/projects';
 
 /**
@@ -49,40 +50,56 @@ export default function ProjectList() {
 
   return (
     <>
-      {/* Following thumbnail */}
+      {/* Following thumbnail. Two modes:
+          - Project has a `thumbnail` path → show that image, no overlay.
+            Row text already carries the metadata; the image is the preview.
+          - No thumbnail → fall back to the tint-gradient + text card so
+            unbuilt projects still preview as something on hover. */}
       <div
         ref={thumbRef}
         className={`hover-thumb ${hovered ? 'visible' : ''}`}
         style={{
-          background: hovered
-            ? `linear-gradient(135deg, ${hovered.tint[0]} 0%, ${hovered.tint[1]} 100%)`
-            : '#222',
+          background: hovered?.thumbnail
+            ? '#0d0d0d'
+            : hovered
+              ? `linear-gradient(135deg, ${hovered.tint[0]} 0%, ${hovered.tint[1]} 100%)`
+              : '#222',
         }}
       >
-        <div className="hover-thumb-inner">
-          <div
-            className="mono"
-            style={{ fontSize: 9, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.7)' }}
-          >
-            {hovered?.client.toUpperCase() ?? ''}
-          </div>
-          <div>
-            <div style={{ fontSize: 14, color: '#fff', fontWeight: 500, lineHeight: 1.2 }}>
-              {hovered?.title ?? ''}
-            </div>
+        {hovered?.thumbnail ? (
+          <Image
+            src={hovered.thumbnail}
+            alt=""
+            fill
+            sizes="240px"
+            className="object-cover"
+          />
+        ) : (
+          <div className="hover-thumb-inner">
             <div
               className="mono"
-              style={{
-                fontSize: 9,
-                color: 'rgba(255,255,255,0.55)',
-                marginTop: 4,
-                letterSpacing: '0.05em',
-              }}
+              style={{ fontSize: 9, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.7)' }}
             >
-              {hovered ? `${hovered.year} · ${hovered.role}` : ''}
+              {hovered?.client.toUpperCase() ?? ''}
+            </div>
+            <div>
+              <div style={{ fontSize: 14, color: '#fff', fontWeight: 500, lineHeight: 1.2 }}>
+                {hovered?.title ?? ''}
+              </div>
+              <div
+                className="mono"
+                style={{
+                  fontSize: 9,
+                  color: 'rgba(255,255,255,0.55)',
+                  marginTop: 4,
+                  letterSpacing: '0.05em',
+                }}
+              >
+                {hovered ? `${hovered.year} · ${hovered.role}` : ''}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* List. id="work" is the scroll target for the header's Work link;

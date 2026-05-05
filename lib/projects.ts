@@ -57,6 +57,13 @@ export type Project = {
   role: string;
   year: string;
   tint: [string, string];
+  /**
+   * Optional path under /public to a thumbnail image used for the hover
+   * preview on the homepage list. When set, the hover card shows the
+   * image (no text overlay); the row itself already carries the metadata.
+   * Fall back to the `tint` gradient + text card when omitted.
+   */
+  thumbnail?: string;
 
   // Case-study fields — optional. A project is considered to have a real
   // case-study page only if `hero` is present.
@@ -166,9 +173,10 @@ export const projects: Project[] = [
     slug: 'apple-3d-icons',
     year: '2022-2025',
     client: 'Apple',
-    title: '3D Icons',
+    title: 'Apps + Games 3D Icons',
     role: '3D Lead, AD',
     tint: ['#3b82f6', '#0a1f4a'],
+    thumbnail: '/projects/apple-3d-icons/thumbnail.png',
     hero: {
       kind: 'scene',
       scanPath: '/scans/apple-3d-icons.glb',
@@ -209,12 +217,9 @@ export const projects: Project[] = [
         framing:
           'Tool — placeholder framing sentence describing the production tool that supported the icon program.',
         images: [
-          // VERIFY: Nick gave this as the asset ID — confirm in the Mux
-          // dashboard that it's actually the *playback* ID. If not, swap
-          // for the playback ID listed under the asset's Playback IDs.
           {
             kind: 'mux',
-            playbackId: 'UVbVaezcuWK5DgqCqUbeWeSgaWRPhFtgkNT01psFQJFo',
+            playbackId: '8tofFgIOzyX02nIBHBqZre9HcppRAgV9pyMPKJ8pCCe4',
             aspect: '160/127',
           },
         ],
