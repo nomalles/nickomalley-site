@@ -51,6 +51,12 @@ export type Phase = {
   /** Optional. When omitted, the framing paragraph isn't rendered. */
   framing?: string | FramingSegment[];
   images: Media[];
+  /**
+   * Number of masonry columns on desktop (md+). Mobile is always 1.
+   * Defaults to 3. Set to 2 for sparser grids (fewer items, larger
+   * media tiles), or 4 for denser ones.
+   */
+  columns?: number;
 };
 
 export type Credits = {
@@ -195,9 +201,11 @@ export const projects: Project[] = [
     phases: [
       {
         // No label, no framing — single flat grid section. Mixed images
-        // and Mux videos flow through the masonry layout.
+        // and Mux videos flow through the masonry layout. 2 columns on
+        // desktop since there are only six tiles; 3 would leave a
+        // sparse trailing column.
+        columns: 2,
         images: [
-          { kind: 'image', src: '/projects/apple-app-awards/Storyboard_2022.png', width: 1658, height: 2944 },
           { kind: 'mux', playbackId: 'dMn00brUD84EZ01fHsVDQIeiuQ4cQOGpVqhHzJZDgdyCg', aspect: '16/9' },
           { kind: 'image', src: '/projects/apple-app-awards/Screenshot 2024-10-16 at 3.22.55 PM.png', width: 5252, height: 2948 },
           { kind: 'image', src: '/projects/apple-app-awards/GOTY_iphone-AS-Newsroom-02.png', width: 3840, height: 2160 },

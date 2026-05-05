@@ -189,7 +189,16 @@ function PhaseBlock({
       {isSingleVideo ? (
         <SingleVideo media={phase.images[0] as Extract<Media, { kind: 'mux' }>} />
       ) : (
-        <div className="phase-grid">
+        <div
+          className="phase-grid"
+          // --phase-cols cascades into the masonry column-count rule.
+          // Cast through CSSProperties so TS allows the custom property.
+          style={
+            phase.columns
+              ? ({ ['--phase-cols' as never]: phase.columns } as React.CSSProperties)
+              : undefined
+          }
+        >
           {phase.images.map((img, i) => (
             <ImageCell key={i} media={img} />
           ))}
