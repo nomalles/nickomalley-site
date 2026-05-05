@@ -195,7 +195,7 @@ export const projects: Project[] = [
       {
         label: 'Concepting',
         framing:
-          'Iterations made to define the 3D shape using the the 2D rounded square as a base. The beveled edges are in communication with apple devices, and UV mapping assures no image warping.',
+          'Iterations made to define the 3D shape using the 2D rounded square as a base. The beveled edges are in communication with Apple devices, and UV mapping assures no image warping.',
         images: [
           { kind: 'image', src: '/projects/apple-3d-icons/Concepting/Blank_Angled-01.png', width: 1920, height: 1080 },
           { kind: 'image', src: '/projects/apple-3d-icons/Concepting/Chiclet_Guides-thickness-ISO.png', width: 1920, height: 1080 },
