@@ -68,6 +68,7 @@ export default function WorkPage({ params }: { params: { slug: string } }) {
           <MetaRow label="Client" value={project.client} />
           <MetaRow label="Year" value={project.year} />
           <MetaRow label="Role" value={project.role} />
+          {project.studio && <MetaRow label="Studio" value={project.studio} />}
           {project.scope && (
             <MetaRow label="Scope" value={project.scope.join(' · ')} />
           )}

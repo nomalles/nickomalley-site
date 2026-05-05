@@ -208,6 +208,27 @@ function PhaseBlock({
   );
 }
 
+/**
+ * Resolve playback options for a Mux media item. Default is silent
+ * looping autoplay (hero clips, ambient grid tiles); 'user-with-sound'
+ * disables autoplay/loop/mute so the visitor presses play and gets
+ * audio on. nohotkeys stays on in both modes for consistency.
+ */
+function muxPlaybackProps(media: Extract<Media, { kind: 'mux' }>) {
+  if (media.playback === 'user-with-sound') {
+    return {
+      autoPlay: false as const,
+      muted: false,
+      loop: false,
+    };
+  }
+  return {
+    autoPlay: 'muted' as const,
+    muted: true,
+    loop: true,
+  };
+}
+
 function SingleVideo({ media }: { media: Extract<Media, { kind: 'mux' }> }) {
   return (
     <div
@@ -218,9 +239,7 @@ function SingleVideo({ media }: { media: Extract<Media, { kind: 'mux' }> }) {
       <MuxPlayer
         playbackId={media.playbackId}
         streamType="on-demand"
-        autoPlay="muted"
-        muted
-        loop
+        {...muxPlaybackProps(media)}
         playsInline
         nohotkeys
         metadata={{ video_title: media.alt ?? '' }}
@@ -268,6 +287,9 @@ const CELL_SIZES = '(max-width: 768px) 100vw, 33vw';
 
 function ImageCell({ media }: { media: Media }) {
   if (media.kind === 'image') {
+    // Animated GIFs need to bypass the optimizer or Next will strip the
+    // animation. Detect by extension and pass-through with unoptimized.
+    const isAnimated = /\.gif$/i.test(media.src);
     // Two modes:
     //   - aspect set → cell is locked to that ratio, image fills via cover
     //     using <Image fill>. Useful when uniform tiles are wanted.
@@ -286,6 +308,7 @@ function ImageCell({ media }: { media: Media }) {
             alt={media.alt ?? ''}
             fill
             sizes={CELL_SIZES}
+            unoptimized={isAnimated}
             className="object-cover"
           />
         </div>
@@ -307,6 +330,7 @@ function ImageCell({ media }: { media: Media }) {
             width={media.width}
             height={media.height}
             sizes={CELL_SIZES}
+            unoptimized={isAnimated}
             className="w-full h-auto block"
           />
         </div>
@@ -322,10 +346,6 @@ function ImageCell({ media }: { media: Media }) {
     );
   }
   if (media.kind === 'mux') {
-    // Inline Mux video tile inside the phase grid. Same playback options
-    // as the case-study hero (autoplay muted loop, no hotkeys, right-click
-    // suppressed). With masonry's break-inside: avoid, the video tile
-    // stays in a single column so its aspect ratio is preserved.
     return (
       <div
         className="overflow-hidden shimmer"
@@ -335,9 +355,7 @@ function ImageCell({ media }: { media: Media }) {
         <MuxPlayer
           playbackId={media.playbackId}
           streamType="on-demand"
-          autoPlay="muted"
-          muted
-          loop
+          {...muxPlaybackProps(media)}
           playsInline
           nohotkeys
           metadata={{ video_title: media.alt ?? '' }}

@@ -15,7 +15,7 @@ import { execFileSync } from 'node:child_process';
 import { readdirSync, statSync } from 'node:fs';
 import { extname, join, posix } from 'node:path';
 
-const IMAGE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.avif']);
+const IMAGE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.avif', '.gif']);
 
 function dims(file) {
   const out = execFileSync('sips', ['-g', 'pixelWidth', '-g', 'pixelHeight', file], {

@@ -10,7 +10,19 @@
 // for now and the dynamic route will return 404 for those slugs.
 
 export type Media =
-  | { kind: 'mux'; playbackId: string; aspect?: string; alt?: string }
+  | {
+      kind: 'mux';
+      playbackId: string;
+      aspect?: string;
+      alt?: string;
+      /**
+       * Default 'autoplay-muted-loop' — silent looping background video,
+       * used for hero clips and ambient grid tiles. Switch to
+       * 'user-with-sound' for content that requires the user to press
+       * play and starts unmuted (process walkthroughs, talkies, etc.).
+       */
+      playback?: 'autoplay-muted-loop' | 'user-with-sound';
+    }
   | {
       kind: 'image';
       src: string;
@@ -71,6 +83,8 @@ export type Project = {
   title: string;
   role: string;
   year: string;
+  /** Production studio. When set, the metadata block adds a "Studio" row. */
+  studio?: string;
   tint: [string, string];
   /**
    * Optional path under /public to a thumbnail image used for the hover
@@ -318,5 +332,58 @@ export const projects: Project[] = [
     title: 'Experiential Install (NDA)',
     role: 'Motion + AD',
     tint: ['#3a4a55', '#0c1014'],
+  },
+  {
+    id: '0018',
+    slug: 'grammy-mono-to-immersive',
+    year: '2019',
+    client: 'The Grammy Museum',
+    title: 'Mono to Immersive',
+    role: 'Motion Designer',
+    studio: 'Gensler',
+    tint: ['#6b46c1', '#1a0f2e'],
+    hero: {
+      kind: 'mux',
+      playbackId: 'xnQ4BU1C7UH01NwukutCJg9B02BCEXiHbosHU7chQfSVU',
+      aspect: '21/9',
+    },
+    context:
+      'Mono to Immersive is an interactive exhibit at The Grammy Museum in Downtown LA, showcasing the visual evolution of sound through performances at the Grammy’s. The visuals are reacting to each performance, becoming more complex as sound quality progresses and more speakers are activated.',
+    phases: [
+      {
+        // Single user-controlled video — full-width, sound on by default
+        // when the visitor presses play.
+        images: [
+          {
+            kind: 'mux',
+            playbackId: '8tyUTYyzaZURQipF3PXTw9JlWWFV4v00zwqwZooPt6OU',
+            aspect: '16/9',
+            playback: 'user-with-sound',
+          },
+        ],
+      },
+      {
+        // 2x2 grid of the four animated GIFs.
+        columns: 2,
+        images: [
+          { kind: 'image', src: '/projects/grammy-museum/ColorTest_01.gif', width: 1114, height: 600 },
+          { kind: 'image', src: '/projects/grammy-museum/Grammy_01.gif', width: 800, height: 941 },
+          { kind: 'image', src: '/projects/grammy-museum/Rosalia_full_01.gif', width: 1200, height: 532 },
+          { kind: 'image', src: '/projects/grammy-museum/Rosalia_full_02.gif', width: 1200, height: 532 },
+        ],
+      },
+      {
+        // Closing user-controlled video.
+        images: [
+          {
+            kind: 'mux',
+            playbackId: 'JZ5cKKNDidVLqVvDrgHcX01oL9iEEpbOjuQjlp1HIY01o',
+            aspect: '16/9',
+            playback: 'user-with-sound',
+          },
+        ],
+      },
+    ],
+    // No passwordHash — public project, no gating.
   },
 ];
