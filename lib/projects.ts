@@ -89,7 +89,7 @@ export const projects: Project[] = [
       aspect: '21/9',
     },
     context:
-      'We were tasked with designing and launching a new App Store for the Vision Pro. This store would leverage editorial 3D content to showcase the experiences on device. The work is spread across 2-3.',
+      'We were tasked with designing and launching a new App Store for the Vision Pro. This store would leverage editorial 3D content to showcase the experiences on device. The work is spread across 2-3 years.',
     phases: [
       {
         framing:
