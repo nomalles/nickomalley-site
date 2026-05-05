@@ -177,7 +177,7 @@ export default function Header({ fps, tris }: HeaderProps) {
         open={scrapsOpen}
         onClose={() => setScrapsOpen(false)}
         label="Scraps"
-        message="A landing zone for personal experiments, scans, and side work — coming soon."
+        message="coming soon :)"
       />
     </div>
   );
