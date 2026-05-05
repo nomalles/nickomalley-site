@@ -190,12 +190,12 @@ export const projects: Project[] = [
       aspect: '21/9',
     },
     context:
-      'Placeholder context paragraph for the 3D Icons project — replace with real copy describing scope, scale, and Nick’s contribution.',
+      'In my time at Apple, I created a 3D icon model and guidelines to be used across store and marketing content, including an internal tool for teams across the org to craft icons for any usage.',
     phases: [
       {
         label: 'Concepting',
         framing:
-          'Concepting — placeholder framing sentence describing the early exploration and system definition for the 3D icon language.',
+          'Iterations made to define the 3D shape using the the 2D rounded square as a base. The beveled edges are in communication with apple devices, and UV mapping assures no image warping.',
         images: [
           { kind: 'image', src: '/projects/apple-3d-icons/Concepting/Blank_Angled-01.png', width: 1920, height: 1080 },
           { kind: 'image', src: '/projects/apple-3d-icons/Concepting/Chiclet_Guides-thickness-ISO.png', width: 1920, height: 1080 },
@@ -210,7 +210,7 @@ export const projects: Project[] = [
       {
         label: 'Usage',
         framing:
-          'Usage — placeholder framing sentence describing how the icon system showed up across editorial layouts and product surfaces.',
+          'A few examples of the 3D icons being used across the App Store.',
         images: [
           { kind: 'image', src: '/projects/apple-3d-icons/Usage/IMG_0431.jpg', width: 1260, height: 2572 },
           { kind: 'image', src: '/projects/apple-3d-icons/Usage/IMG_2159.PNG', width: 1170, height: 2532 },
@@ -225,7 +225,7 @@ export const projects: Project[] = [
       {
         label: 'Tool',
         framing:
-          'Tool — placeholder framing sentence describing the production tool that supported the icon program.',
+          'I developed a tool to be used internally at Apple for other designers and teams to quickly export images using icons of their choice. Positioning, lighting, and texture is all editable.',
         images: [
           {
             kind: 'mux',
@@ -235,9 +235,6 @@ export const projects: Project[] = [
         ],
       },
     ],
-    credits: {
-      team: ['Placeholder — replace with real credit lines'],
-    },
     // Same hash as Apple Vision Pro so unlocking one gates the other in.
     passwordHash: '4097889236a2af26c293033feb964c4cf118c0224e0d063fec0a89e9d0569ef2',
   },
