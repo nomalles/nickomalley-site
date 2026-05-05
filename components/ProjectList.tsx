@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { projects, type Project } from '@/lib/projects';
 
 /**
@@ -101,22 +102,43 @@ export default function ProjectList() {
           <span>{projects.length} entries</span>
         </div>
         <div>
-          {projects.map((p) => (
-            <div
-              key={p.id}
-              className="project-row relative grid grid-cols-12 gap-4 py-4 group items-baseline"
-              onMouseEnter={() => setHovered(p)}
-              onMouseLeave={() => setHovered(null)}
-            >
-              <div className="col-span-3 text-[15px] font-medium tracking-tight row-client text-fg-90">
-                {p.client}
+          {projects.map((p) => {
+            // A project is "linkable" when it has a built-out case study
+            // (i.e. a hero — that's how /work/[slug] decides to render).
+            // Other entries render as plain divs until we build their pages.
+            const hasPage = !!p.hero;
+            const rowClass =
+              'project-row relative grid grid-cols-12 gap-4 py-4 group items-baseline';
+            const rowHandlers = {
+              onMouseEnter: () => setHovered(p),
+              onMouseLeave: () => setHovered(null),
+            };
+            const rowInner = (
+              <>
+                <div className="col-span-3 text-[15px] font-medium tracking-tight row-client text-fg-90">
+                  {p.client}
+                </div>
+                <div className="col-span-6 text-[15px] row-title text-fg-70">{p.title}</div>
+                <div className="col-span-3 text-[13px] row-role text-fg-45 text-right">
+                  {p.role}
+                </div>
+              </>
+            );
+            return hasPage ? (
+              <Link
+                key={p.id}
+                href={`/work/${p.slug}`}
+                className={rowClass}
+                {...rowHandlers}
+              >
+                {rowInner}
+              </Link>
+            ) : (
+              <div key={p.id} className={rowClass} {...rowHandlers}>
+                {rowInner}
               </div>
-              <div className="col-span-6 text-[15px] row-title text-fg-70">{p.title}</div>
-              <div className="col-span-3 text-[13px] row-role text-fg-45 text-right">
-                {p.role}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
     </>
