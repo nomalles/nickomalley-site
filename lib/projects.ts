@@ -310,6 +310,7 @@ export const projects: Project[] = [
     role: 'Motion Designer',
     studio: 'Trailer Park',
     tint: ['#ffd23f', '#1e2c5e'],
+    thumbnail: '/projects/pokemon-go/thumbnail.png',
     hero: {
       kind: 'youtube',
       videoId: 'xI4CGC_jc4o',
@@ -354,6 +355,7 @@ export const projects: Project[] = [
     role: 'Motion Designer',
     studio: 'Jellyfish',
     tint: ['#0070d1', '#000000'],
+    thumbnail: '/projects/playstation/thumbnail.png',
     hero: {
       kind: 'mux',
       playbackId: 'wl1KfiDQALyV1Bo7uW3wJg5cQgCB9Zo00jKL34zPkaRA',
@@ -398,6 +400,7 @@ export const projects: Project[] = [
     role: '3D + Motion Designer',
     studio: 'Gensler',
     tint: ['#1a4ba0', '#0c1530'],
+    thumbnail: '/projects/warner-media/thumbnail.png',
     hero: {
       kind: 'mux',
       playbackId: 'x6CKlZLvxu02WgrI1zGXJmg3dQI8JZsqRsz013RN601D02k',
@@ -443,6 +446,7 @@ export const projects: Project[] = [
     role: 'Motion Designer',
     studio: 'Esports Engine',
     tint: ['#9147ff', '#0e0e10'],
+    thumbnail: '/projects/twitch/thumbnail.png',
     hero: {
       kind: 'mux',
       playbackId: 'bNeFRP2K33Fodsz00mKMMzkN02aCImaNWh00I48pflFJpA',
@@ -478,6 +482,7 @@ export const projects: Project[] = [
     role: 'Motion Designer',
     studio: 'Gensler',
     tint: ['#6b46c1', '#1a0f2e'],
+    thumbnail: '/projects/grammy-museum/thumbnail.png',
     hero: {
       kind: 'mux',
       playbackId: 'xnQ4BU1C7UH01NwukutCJg9B02BCEXiHbosHU7chQfSVU',

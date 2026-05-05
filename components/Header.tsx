@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import InfoModal from './InfoModal';
+import ComingSoonModal from './ComingSoonModal';
 
 type HeaderProps = {
   fps: number;
@@ -20,6 +21,7 @@ type HeaderProps = {
 export default function Header({ fps, tris }: HeaderProps) {
   const [time, setTime] = useState('—:—');
   const [infoOpen, setInfoOpen] = useState(false);
+  const [scrapsOpen, setScrapsOpen] = useState(false);
 
   // Live Salzburg time (Europe/Vienna covers all of Austria)
   useEffect(() => {
@@ -134,7 +136,20 @@ export default function Header({ fps, tris }: HeaderProps) {
             >
               Instagram
             </a>
-            <a href="/scraps" className="text-fg-55 hover-accent block">Scraps</a>
+            <button
+              type="button"
+              onClick={() => setScrapsOpen(true)}
+              className="text-fg-55 hover-accent block ml-auto"
+              style={{
+                background: 'transparent',
+                border: 'none',
+                padding: 0,
+                font: 'inherit',
+                cursor: 'pointer',
+              }}
+            >
+              Scraps
+            </button>
             <button
               type="button"
               onClick={() => setInfoOpen(true)}
@@ -158,6 +173,12 @@ export default function Header({ fps, tris }: HeaderProps) {
       </div>
 
       <InfoModal open={infoOpen} onClose={() => setInfoOpen(false)} />
+      <ComingSoonModal
+        open={scrapsOpen}
+        onClose={() => setScrapsOpen(false)}
+        label="Scraps"
+        message="A landing zone for personal experiments, scans, and side work — coming soon."
+      />
     </div>
   );
 }
