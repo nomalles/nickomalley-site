@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 
 type Props = {
@@ -19,6 +20,14 @@ type Props = {
  *     `open` is false so there's no extra cost on the rest of the site
  */
 export default function InfoModal({ open, onClose }: Props) {
+  // Track mount state so the portal target (document.body) is only
+  // referenced on the client. Avoids issues during SSR where document
+  // doesn't exist.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     if (!open) return;
 
@@ -37,9 +46,14 @@ export default function InfoModal({ open, onClose }: Props) {
     };
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
-  return (
+  // Render into document.body via a portal so the modal escapes the
+  // Header's DOM tree. The Header's wrapper has pointer-events: none
+  // (so canvas drag passes through it), and pointer-events inherits in
+  // CSS — without the portal, the backdrop and X button would inherit
+  // none and silently swallow clicks.
+  return createPortal(
     <div
       className="info-modal-backdrop"
       onClick={onClose}
@@ -103,6 +117,7 @@ export default function InfoModal({ open, onClose }: Props) {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
