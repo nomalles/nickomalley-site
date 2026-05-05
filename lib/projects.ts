@@ -196,10 +196,11 @@ export const projects: Project[] = [
         'CD — Emersson Barillas',
       ],
     },
-    // SHA-256 of the literal string "placeholder". Replace this hash AND the
-    // password before launch. To regenerate:
+    // SHA-256 of "nickwork" — shared across the gated projects so one
+    // unlock opens the others (see CaseStudyPhases for the cross-page
+    // unlock logic). To regenerate for a new password:
     //   node -e "console.log(require('crypto').createHash('sha256').update('YOURPASSWORD').digest('hex'))"
-    passwordHash: '4097889236a2af26c293033feb964c4cf118c0224e0d063fec0a89e9d0569ef2',
+    passwordHash: '3ded20af90c0727c2c4cfe46504c55567704f6af930be426e2ad8e369649e4de',
   },
   {
     id: '0023a',
@@ -235,7 +236,7 @@ export const projects: Project[] = [
       },
     ],
     // Same hash as the other Apple pages — unlocking one unlocks all.
-    passwordHash: '4097889236a2af26c293033feb964c4cf118c0224e0d063fec0a89e9d0569ef2',
+    passwordHash: '3ded20af90c0727c2c4cfe46504c55567704f6af930be426e2ad8e369649e4de',
   },
   {
     id: '0022a',
@@ -298,7 +299,7 @@ export const projects: Project[] = [
       },
     ],
     // Same hash as Apple Vision Pro so unlocking one gates the other in.
-    passwordHash: '4097889236a2af26c293033feb964c4cf118c0224e0d063fec0a89e9d0569ef2',
+    passwordHash: '3ded20af90c0727c2c4cfe46504c55567704f6af930be426e2ad8e369649e4de',
   },
   {
     id: '0020a',
