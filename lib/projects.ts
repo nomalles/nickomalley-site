@@ -121,15 +121,6 @@ export type Project = {
 
 export const projects: Project[] = [
   {
-    id: '0024',
-    slug: 'red-bull-energy-campaign',
-    year: '2025',
-    client: 'Red Bull',
-    title: 'Energy Brand Campaign',
-    role: 'Senior 3D Motion',
-    tint: ['#a30418', '#1d3a8a'],
-  },
-  {
     id: '0023',
     slug: 'apple-vision-pro',
     year: '2023-2025',
@@ -310,24 +301,6 @@ export const projects: Project[] = [
     passwordHash: '4097889236a2af26c293033feb964c4cf118c0224e0d063fec0a89e9d0569ef2',
   },
   {
-    id: '0022',
-    slug: 'apple-apps-games-editorial',
-    year: '2024',
-    client: 'Apple',
-    title: 'Apps & Games Editorial',
-    role: '3D Designer, AD',
-    tint: ['#ff5d5d', '#ffb84d'],
-  },
-  {
-    id: '0021',
-    slug: 'apple-app-store-originals',
-    year: '2023',
-    client: 'Apple',
-    title: 'App Store Originals',
-    role: '3D Design Lead',
-    tint: ['#7e3eff', '#1f0a4a'],
-  },
-  {
     id: '0020a',
     slug: 'pokemon-go-season-of-go',
     year: '2022',
@@ -372,15 +345,6 @@ export const projects: Project[] = [
     // No passwordHash — public.
   },
   {
-    id: '0020',
-    slug: 'warnermedia-win-the-court',
-    year: '2022',
-    client: 'WarnerMedia',
-    title: 'Win the Court',
-    role: 'Motion Designer',
-    tint: ['#1f4ec2', '#070a1a'],
-  },
-  {
     id: '0020b',
     slug: 'playstation-tournaments',
     year: '2021-2022',
@@ -423,15 +387,6 @@ export const projects: Project[] = [
       },
     ],
     // No passwordHash — public.
-  },
-  {
-    id: '0019',
-    slug: 'gensler-experiential',
-    year: '2021',
-    client: 'Gensler',
-    title: 'Experiential Install (NDA)',
-    role: 'Motion + AD',
-    tint: ['#3a4a55', '#0c1014'],
   },
   {
     id: '0018b',
