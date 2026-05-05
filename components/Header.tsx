@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import InfoModal from './InfoModal';
 
 type HeaderProps = {
   fps: number;
@@ -18,6 +19,7 @@ type HeaderProps = {
  */
 export default function Header({ fps, tris }: HeaderProps) {
   const [time, setTime] = useState('—:—');
+  const [infoOpen, setInfoOpen] = useState(false);
 
   // Live Salzburg time (Europe/Vienna covers all of Austria)
   useEffect(() => {
@@ -133,7 +135,20 @@ export default function Header({ fps, tris }: HeaderProps) {
               Instagram
             </a>
             <a href="/scraps" className="text-fg-55 hover-accent block">Scraps</a>
-            <a href="/info" className="text-fg-55 hover-accent block">Info</a>
+            <button
+              type="button"
+              onClick={() => setInfoOpen(true)}
+              className="text-fg-55 hover-accent block ml-auto"
+              style={{
+                background: 'transparent',
+                border: 'none',
+                padding: 0,
+                font: 'inherit',
+                cursor: 'pointer',
+              }}
+            >
+              Info
+            </button>
           </div>
 
           <div style={{ height: 24 }} />
@@ -141,6 +156,8 @@ export default function Header({ fps, tris }: HeaderProps) {
           <div className="text-fg-30">scroll to see work ↓</div>
         </div>
       </div>
+
+      <InfoModal open={infoOpen} onClose={() => setInfoOpen(false)} />
     </div>
   );
 }
