@@ -51,7 +51,17 @@ export default function CaseStudyHero({ hero, title }: Props) {
         playsInline
         nohotkeys
         metadata={{ video_title: title }}
-        style={{ width: '100%', height: '100%', display: 'block' }}
+        // --media-object-fit is Mux Player's CSS hook for the inner <video>
+        // element's object-fit. "cover" scales the video up to fill the
+        // 21:9 frame with no pillarbox bars; the tradeoff is ~15% top/bottom
+        // crop because the source is 16:9. Cast through CSSProperties so
+        // TS allows the custom property.
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'block',
+          '--media-object-fit': 'cover',
+        } as React.CSSProperties}
       />
     </div>
   );
