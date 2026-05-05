@@ -119,6 +119,51 @@ body, body * {
   100% { opacity: 0; }
 }
 
+/* Case study phase grid.
+   Mobile: single-column stack.
+   md+:    CSS-columns masonry — items flow top-to-bottom in each column
+           so there are no row-aligned gaps from mixed-aspect images. The
+           tradeoff is reading order (column-by-column rather than row-
+           by-row), which fits a curated case study fine. */
+.phase-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+@media (min-width: 768px) {
+  .phase-grid {
+    display: block;
+    column-count: 3;
+    column-gap: 1rem;
+  }
+  .phase-grid > * {
+    break-inside: avoid;
+    margin-bottom: 1rem;
+    /* Without this, descendants with display: flex etc. can leak across
+       columns in some engines. Forces each cell to be a column-friendly
+       block. */
+    display: block;
+  }
+}
+
+/* Loading shimmer — covers each cell until Next/Image paints over it.
+   Subtle 0.03 → 0.08 alpha sweep; intentionally understated so it
+   reads as a quiet pulse, not an animated banner. */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(244, 242, 238, 0.03) 0%,
+    rgba(244, 242, 238, 0.08) 50%,
+    rgba(244, 242, 238, 0.03) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
 /* Case study phase gate — content blurred + pointer-disabled until the
    password is submitted. Toggled by the .unlocked class from the
    CaseStudyPhases component. 600ms cubic-bezier matches the rest of

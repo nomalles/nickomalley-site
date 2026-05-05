@@ -141,7 +141,7 @@ function PhaseBlock({ index, phase }: { index: number; phase: Phase }) {
       >
         <Framing framing={phase.framing} />
       </p>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+      <div className="phase-grid">
         {phase.images.map((img, i) => (
           <ImageCell key={i} media={img} />
         ))}
@@ -197,11 +197,8 @@ function ImageCell({ media }: { media: Media }) {
     if (media.aspect) {
       return (
         <div
-          className="overflow-hidden relative"
-          style={{
-            aspectRatio: media.aspect,
-            background: 'rgba(244,242,238,0.04)',
-          }}
+          className="overflow-hidden relative shimmer"
+          style={{ aspectRatio: media.aspect }}
         >
           <Image
             src={media.src}
@@ -216,8 +213,12 @@ function ImageCell({ media }: { media: Media }) {
     if (media.width && media.height) {
       return (
         <div
-          className="overflow-hidden"
-          style={{ background: 'rgba(244,242,238,0.04)' }}
+          className="overflow-hidden shimmer"
+          // Reserve layout space at the source aspect ratio while the
+          // optimized image is being requested. Without this the cell
+          // would be 0px tall until <Image> paints, which would defeat
+          // the shimmer effect entirely.
+          style={{ aspectRatio: `${media.width} / ${media.height}` }}
         >
           <Image
             src={media.src}
@@ -234,11 +235,8 @@ function ImageCell({ media }: { media: Media }) {
     // a broken image. Should never happen if data is populated correctly.
     return (
       <div
-        className="overflow-hidden"
-        style={{
-          aspectRatio: '4/3',
-          background: 'rgba(244,242,238,0.04)',
-        }}
+        className="overflow-hidden shimmer"
+        style={{ aspectRatio: '4/3' }}
       />
     );
   }
