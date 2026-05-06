@@ -66,13 +66,21 @@ export default function WorkPage({ params }: { params: { slug: string } }) {
         </Link>
       </header>
 
-      {/* Hero */}
-      <section className="px-8 md:px-12">
+      {/* Hero. Image heroes can opt into edge-to-edge by setting
+          `fullBleed: true` on the hero entry — no horizontal padding. */}
+      {project.hero.kind === 'image' && project.hero.fullBleed ? (
         <CaseStudyHero
           hero={project.hero}
           title={`${project.client} ${project.title}`}
         />
-      </section>
+      ) : (
+        <section className="px-8 md:px-12">
+          <CaseStudyHero
+            hero={project.hero}
+            title={`${project.client} ${project.title}`}
+          />
+        </section>
+      )}
 
       {project.planHero ? (
         <PlanHeroBlock project={project} />

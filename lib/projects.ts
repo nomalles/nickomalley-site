@@ -36,6 +36,11 @@ export type Media =
        */
       width?: number;
       height?: number;
+      /**
+       * Hero-only: render edge-to-edge (no horizontal page padding).
+       * Has no effect when this Media is used inside a phase grid.
+       */
+      fullBleed?: boolean;
     }
   | {
       /** Interactive Three.js hero — currently used by Scene3DIcons. */
@@ -167,6 +172,7 @@ export const projects: Project[] = [
       kind: 'image',
       src: '/projects/redbull-billbooard/hero/Screenshot 2026-05-06 at 11.45.18.png',
       aspect: '3632 / 1826',
+      fullBleed: true,
     },
     planHero: {
       src: '/projects/redbull-billbooard/planning/plan-hero.png',
@@ -421,7 +427,7 @@ export const projects: Project[] = [
     id: '0020a',
     slug: 'pokemon-go-season-of-go',
     year: '2022',
-    client: 'Niantic, The Pokemon Company',
+    client: 'Pokemon GO',
     title: 'Season of GO',
     role: 'Motion Designer',
     studio: 'Trailer Park',
