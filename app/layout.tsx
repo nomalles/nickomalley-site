@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { IBM_Plex_Sans, IBM_Plex_Mono } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
+import { GoogleAnalytics } from '@next/third-parties/google';
 import './globals.css';
 import CustomCursor from '@/components/CustomCursor';
 
@@ -64,6 +65,10 @@ export default function RootLayout({
             data appears under Project → Analytics in vercel.com. */}
         <Analytics />
       </body>
+      {/* Google Analytics (GA4). Wraps gtag.js via next/script with the
+          right loading strategy so it doesn't block rendering. Data shows
+          up in analytics.google.com under the property tied to this ID. */}
+      <GoogleAnalytics gaId="G-72NX4GMMH0" />
     </html>
   );
 }
