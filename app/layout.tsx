@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { IBM_Plex_Sans, IBM_Plex_Mono } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 import CustomCursor from '@/components/CustomCursor';
 
@@ -58,6 +59,10 @@ export default function RootLayout({
             at all). */}
         <CustomCursor />
         {children}
+        {/* Vercel Analytics — page views + visitor metrics. Only sends
+            data when deployed on Vercel; no-op in local dev. Dashboard
+            data appears under Project → Analytics in vercel.com. */}
+        <Analytics />
       </body>
     </html>
   );
