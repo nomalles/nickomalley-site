@@ -74,14 +74,16 @@ export default function CaseStudyPhases({ phases, passwordHash }: Props) {
     setSubmitting(false);
   }
 
-  // Only show the "The Work" intro label when phases actually have written
-  // structure (labels or framings). Pages where the phases are just flat
-  // visual blocks would render a label that has nothing to introduce.
-  const showWorkLabel = phases.some((p) => p.label || p.framing);
+  // Phases are considered "structured" when at least one carries written
+  // copy (a label or framing). Drives two things:
+  //   - whether the "The Work" intro label renders
+  //   - whether unlabeled phases auto-fall-back to "Phase 01" / "Phase 02"
+  // On flat-content projects (just visual blocks, no copy) both stay off.
+  const phasesHaveStructure = phases.some((p) => p.label || p.framing);
 
   return (
     <section className="px-8 md:px-12 pt-24">
-      {showWorkLabel && (
+      {phasesHaveStructure && (
         <div className="mono text-[10px] tracking-[0.18em] text-fg-30 uppercase mb-12">
           The Work
         </div>
@@ -146,7 +148,7 @@ export default function CaseStudyPhases({ phases, passwordHash }: Props) {
             key={i}
             index={i + 1}
             phase={phase}
-            phaseCount={phases.length}
+            autoLabel={phasesHaveStructure}
           />
         ))}
       </div>
@@ -157,11 +159,12 @@ export default function CaseStudyPhases({ phases, passwordHash }: Props) {
 function PhaseBlock({
   index,
   phase,
-  phaseCount,
+  autoLabel,
 }: {
   index: number;
   phase: Phase;
-  phaseCount: number;
+  /** When true, unlabeled phases get the auto "Phase NN" fallback heading. */
+  autoLabel: boolean;
 }) {
   // A single-video phase (Mux or YouTube) reads better as a full-width
   // hero than as one skinny column inside a 3-col masonry. Detect that
@@ -171,10 +174,10 @@ function PhaseBlock({
   const isSingleVideo =
     onlyItem !== null && (onlyItem.kind === 'mux' || onlyItem.kind === 'youtube');
 
-  // Auto "Phase NN" only for multi-phase projects. Single-section projects
-  // (e.g. a flat awards grid) leave the heading off entirely.
+  // Auto "Phase NN" fallback only kicks in when the parent says this
+  // project has structured phases. Flat-visual projects stay anonymous.
   const labelText =
-    phase.label ?? (phaseCount > 1 ? `Phase ${String(index).padStart(2, '0')}` : null);
+    phase.label ?? (autoLabel ? `Phase ${String(index).padStart(2, '0')}` : null);
   const showHeader = labelText !== null || phase.framing !== undefined;
 
   return (
