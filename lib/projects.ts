@@ -110,7 +110,12 @@ export type Project = {
   // case-study page only if `hero` is present.
   hero?: Media;
   scope?: string[];
-  context?: string;
+  /**
+   * Top-of-page paragraph. Either a plain string or a segment array
+   * (same shape as phase framing) when you want inline links — including
+   * `#anchor` hrefs that scroll to a phase block lower on the page.
+   */
+  context?: string | FramingSegment[];
   phases?: Phase[];
   credits?: Credits;
   // SHA-256 hex of the gating password. Generate with:
@@ -252,8 +257,11 @@ export const projects: Project[] = [
       scanPath: '/scans/apple-3d-icons.glb',
       aspect: '21/9',
     },
-    context:
-      'In my time at Apple, I created a 3D icon model and guidelines to be used across store and marketing content, including an internal tool for teams across the org to craft icons for any usage.',
+    context: [
+      'In my time at Apple, I created a 3D icon model and guidelines to be used across store and marketing content, including an ',
+      { text: 'internal tool', href: '#phase-tool' },
+      ' for teams across the org to craft icons for any usage.',
+    ],
     phases: [
       {
         label: 'Concepting',

@@ -1,10 +1,11 @@
 'use client';
 
-import { Fragment, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import type { Phase, Media } from '@/lib/projects';
 import YouTubeEmbed from './YouTubeEmbed';
+import Framing from './Framing';
 
 // Mux Player is heavy; only mount it on the client so the page itself can
 // stay static. Used for video media in phase grids (e.g. tool walkthroughs).
@@ -180,8 +181,16 @@ function PhaseBlock({
     phase.label ?? (autoLabel ? `Phase ${String(index).padStart(2, '0')}` : null);
   const showHeader = labelText !== null || phase.framing !== undefined;
 
+  // Auto-generate a scroll anchor from the label ("Tool" → "phase-tool",
+  // "Content snippets" → "phase-content-snippets"). Lets context paragraphs
+  // (or anything else) deep-link with #phase-<slug>. scrollMarginTop offsets
+  // for the fixed header.
+  const phaseId = phase.label
+    ? `phase-${phase.label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`
+    : undefined;
+
   return (
-    <div className="mb-24">
+    <div id={phaseId} className="mb-24" style={phaseId ? { scrollMarginTop: 90 } : undefined}>
       {showHeader && (
         <>
           {labelText && (
@@ -268,37 +277,6 @@ function SingleVideo({ media }: { media: Extract<Media, { kind: 'mux' }> }) {
         style={{ width: '100%', height: '100%', display: 'block' }}
       />
     </div>
-  );
-}
-
-/**
- * Stitch a Phase['framing'] into a paragraph. Plain string passes through;
- * a segment array is mapped, with link segments rendered as new-tab anchors
- * styled to read inline (subtle underline, hover-accent for color).
- */
-function Framing({ framing }: { framing: Phase['framing'] }) {
-  if (!framing) return null;
-  if (typeof framing === 'string') return <>{framing}</>;
-  return (
-    <>
-      {framing.map((seg, i) => (
-        <Fragment key={i}>
-          {typeof seg === 'string' ? (
-            seg
-          ) : (
-            <a
-              href={seg.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover-accent"
-              style={{ textDecoration: 'underline', textUnderlineOffset: '3px' }}
-            >
-              {seg.text}
-            </a>
-          )}
-        </Fragment>
-      ))}
-    </>
   );
 }
 

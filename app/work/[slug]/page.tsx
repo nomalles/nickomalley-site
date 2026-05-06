@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { projects } from '@/lib/projects';
 import CaseStudyHero from '@/components/CaseStudyHero';
 import CaseStudyPhases from '@/components/CaseStudyPhases';
+import Framing from '@/components/Framing';
 
 /**
  * /work/[slug] — case study page.
@@ -31,9 +32,18 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const project = projects.find((p) => p.slug === params.slug);
   if (!project) return {};
+  // Flatten context (either a plain string or a segment array) to a
+  // single description string for SEO/social previews.
+  const descriptionText =
+    typeof project.context === 'string'
+      ? project.context
+      : project.context
+          ?.map((seg) => (typeof seg === 'string' ? seg : seg.text))
+          .join('');
+
   return {
     title: `${project.client} — ${project.title} · Nick O'Malley`,
-    description: project.context?.slice(0, 160),
+    description: descriptionText?.slice(0, 160),
   };
 }
 
@@ -77,7 +87,7 @@ export default function WorkPage({ params }: { params: { slug: string } }) {
           className="md:col-span-7 text-fg-90"
           style={{ fontSize: 18, lineHeight: 1.5 }}
         >
-          {project.context}
+          <Framing framing={project.context} />
         </div>
       </section>
 

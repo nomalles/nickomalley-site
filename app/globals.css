@@ -16,6 +16,13 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Native smooth-scroll for in-page anchor links (e.g. context paragraphs
+   that link to a phase block lower on the page). The "no scroll-hijacking"
+   rule still holds — this only kicks in when the user clicks an anchor. */
+html {
+  scroll-behavior: smooth;
+}
+
 /* Hide system cursor everywhere — replaced by custom green dot */
 body, body * {
   cursor: none !important;
