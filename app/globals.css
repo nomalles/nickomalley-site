@@ -246,25 +246,27 @@ body, body * {
            tradeoff is reading order (column-by-column rather than row-
            by-row), which fits a curated case study fine. */
 .phase-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  display: block;
+  /* CSS-columns masonry both on mobile and desktop. Column count is
+     driven by inline custom properties so each phase can override:
+       --phase-cols-mobile (default 1)  → at <768px
+       --phase-cols       (default 3)  → at md+
+     With 1 column on mobile the layout collapses to a vertical stack,
+     identical to a flex-column with margin-bottom between items. */
+  column-count: var(--phase-cols-mobile, 1);
+  column-gap: 1rem;
+}
+.phase-grid > * {
+  break-inside: avoid;
+  margin-bottom: 1rem;
+  /* Without this, descendants with display: flex etc. can leak across
+     columns in some engines. Forces each cell to be a column-friendly
+     block. */
+  display: block;
 }
 @media (min-width: 768px) {
   .phase-grid {
-    display: block;
-    /* --phase-cols can be overridden inline per phase (defaults to 3).
-       Useful for sparser grids on lower-count sections. */
     column-count: var(--phase-cols, 3);
-    column-gap: 1rem;
-  }
-  .phase-grid > * {
-    break-inside: avoid;
-    margin-bottom: 1rem;
-    /* Without this, descendants with display: flex etc. can leak across
-       columns in some engines. Forces each cell to be a column-friendly
-       block. */
-    display: block;
   }
 }
 

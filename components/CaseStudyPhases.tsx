@@ -76,11 +76,12 @@ export default function CaseStudyPhases({ phases, passwordHash }: Props) {
   }
 
   // Phases are considered "structured" when at least one carries written
-  // copy (a label or framing). Drives two things:
+  // copy (a string label or framing — explicit `null` labels don't count).
+  // Drives:
   //   - whether the "The Work" intro label renders
   //   - whether unlabeled phases auto-fall-back to "Phase 01" / "Phase 02"
   // On flat-content projects (just visual blocks, no copy) both stay off.
-  const phasesHaveStructure = phases.some((p) => p.label || p.framing);
+  const phasesHaveStructure = phases.some((p) => !!p.label || !!p.framing);
 
   return (
     <section className="px-8 md:px-12 pt-24">
@@ -177,20 +178,32 @@ function PhaseBlock({
 
   // Auto "Phase NN" fallback only kicks in when the parent says this
   // project has structured phases. Flat-visual projects stay anonymous.
-  const labelText =
-    phase.label ?? (autoLabel ? `Phase ${String(index).padStart(2, '0')}` : null);
+  // null = explicitly hide the heading; undefined = fall back to autoLabel.
+  let labelText: string | null;
+  if (phase.label === null) labelText = null;
+  else if (phase.label) labelText = phase.label;
+  else if (autoLabel) labelText = `Phase ${String(index).padStart(2, '0')}`;
+  else labelText = null;
+
   const showHeader = labelText !== null || phase.framing !== undefined;
 
-  // Auto-generate a scroll anchor from the label ("Tool" → "phase-tool",
-  // "Content snippets" → "phase-content-snippets"). Lets context paragraphs
-  // (or anything else) deep-link with #phase-<slug>. scrollMarginTop offsets
-  // for the fixed header.
+  // Auto-generate a scroll anchor from a string label.
   const phaseId = phase.label
     ? `phase-${phase.label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`
     : undefined;
 
+  // Inline CSS variables for the masonry column counts, plus scroll
+  // margin so anchor jumps land below the fixed header.
+  const wrapperStyle: React.CSSProperties = {
+    ...(phaseId ? { scrollMarginTop: 90 } : {}),
+    ...(phase.columns ? ({ ['--phase-cols' as never]: phase.columns } as object) : {}),
+    ...(phase.mobileColumns
+      ? ({ ['--phase-cols-mobile' as never]: phase.mobileColumns } as object)
+      : {}),
+  };
+
   return (
-    <div id={phaseId} className="mb-24" style={phaseId ? { scrollMarginTop: 90 } : undefined}>
+    <div id={phaseId} className="mb-24" style={wrapperStyle}>
       {showHeader && (
         <>
           {labelText && (
@@ -220,21 +233,20 @@ function PhaseBlock({
           </div>
         ) : null
       ) : (
-        <div
-          className="phase-grid"
-          // --phase-cols cascades into the masonry column-count rule.
-          // Cast through CSSProperties so TS allows the custom property.
-          style={
-            phase.columns
-              ? ({ ['--phase-cols' as never]: phase.columns } as React.CSSProperties)
-              : undefined
-          }
-        >
+        <div className="phase-grid">
           {phase.images.map((img, i) => (
             <ImageCell key={i} media={img} />
           ))}
         </div>
       )}
+
+      {/* Trailing media — full-width blocks below the grid. Used for
+          concluding hero stills, full-bleed videos, etc. */}
+      {phase.trailing?.map((media, i) => (
+        <div key={i} className="mt-4">
+          <FullWidthMedia media={media} />
+        </div>
+      ))}
     </div>
   );
 }
@@ -258,6 +270,47 @@ function muxPlaybackProps(media: Extract<Media, { kind: 'mux' }>) {
     muted: true,
     loop: true,
   };
+}
+
+/**
+ * Render any Media at full content width with its natural aspect ratio.
+ * Used for `phase.trailing` items — each one renders as its own block
+ * below the grid. Mux + YouTube already have full-width helpers above;
+ * for images we use Next/Image with intrinsic width/height so the
+ * aspect is preserved without cropping.
+ */
+function FullWidthMedia({ media }: { media: Media }) {
+  if (media.kind === 'mux') return <SingleVideo media={media} />;
+  if (media.kind === 'youtube') {
+    return (
+      <div
+        className="overflow-hidden w-full"
+        style={{ aspectRatio: media.aspect ?? '16/9' }}
+      >
+        <YouTubeEmbed media={media} />
+      </div>
+    );
+  }
+  if (media.kind === 'image' && media.width && media.height) {
+    const isAnimated = /\.gif$/i.test(media.src);
+    return (
+      <div
+        className="overflow-hidden shimmer"
+        style={{ aspectRatio: `${media.width} / ${media.height}` }}
+      >
+        <Image
+          src={media.src}
+          alt={media.alt ?? ''}
+          width={media.width}
+          height={media.height}
+          sizes="100vw"
+          unoptimized={isAnimated}
+          className="w-full h-auto block"
+        />
+      </div>
+    );
+  }
+  return null;
 }
 
 function SingleVideo({ media }: { media: Extract<Media, { kind: 'mux' }> }) {

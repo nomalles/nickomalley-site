@@ -65,22 +65,37 @@ export type FramingSegment = string | { text: string; href: string };
 
 export type Phase = {
   /**
-   * Heading shown above the framing sentence. When omitted on a multi-
-   * phase project, the renderer falls back to "Phase 01", "Phase 02",
-   * etc. On a single-phase project (one section, no chronological
-   * structure), an absent label shows nothing — the section just renders
-   * its grid with no heading.
+   * Heading shown above the framing sentence.
+   *   - `string`        → use it
+   *   - `undefined`     → if other phases are labeled/framed, fall back
+   *                       to "Phase 01" / "Phase 02"; otherwise show none
+   *   - `null` (explicit)→ render no heading at all, even on a project
+   *                       where other phases are labeled. Useful for
+   *                       continuation phases that visually belong to the
+   *                       previous labeled section
    */
-  label?: string;
+  label?: string | null;
   /** Optional. When omitted, the framing paragraph isn't rendered. */
   framing?: string | FramingSegment[];
   images: Media[];
   /**
-   * Number of masonry columns on desktop (md+). Mobile is always 1.
-   * Defaults to 3. Set to 2 for sparser grids (fewer items, larger
-   * media tiles), or 4 for denser ones.
+   * Number of masonry columns on desktop (md+). Defaults to 3. Set
+   * to 2 for sparser grids, 4 for denser ones.
    */
   columns?: number;
+  /**
+   * Number of masonry columns on mobile. Defaults to 1 (stacked).
+   * Set to 2 to keep a 2-up layout on phones for grids that read
+   * better as a tight 2×N (e.g. balanced 2×2 portrait sections).
+   */
+  mobileColumns?: number;
+  /**
+   * Optional list of media items rendered at full content width
+   * BELOW the grid, in order. Use for "concluding" hero stills,
+   * full-bleed videos that punctuate a phase, etc. Each item is
+   * rendered at its natural aspect ratio.
+   */
+  trailing?: Media[];
 };
 
 export type Credits = {
@@ -109,6 +124,20 @@ export type Project = {
   // Case-study fields — optional. A project is considered to have a real
   // case-study page only if `hero` is present.
   hero?: Media;
+  /**
+   * Optional second hero block that sits between the page hero and the
+   * phases. Used when the project's intro paragraph is baked into a
+   * design image rather than written copy. The standard meta block +
+   * context paragraph is suppressed when `planHero` is set; instead the
+   * client / year / role values are overlaid in black on the top-left
+   * of this image.
+   */
+  planHero?: {
+    src: string;
+    width: number;
+    height: number;
+    alt?: string;
+  };
   scope?: string[];
   /**
    * Top-of-page paragraph. Either a plain string or a segment array
@@ -125,6 +154,85 @@ export type Project = {
 };
 
 export const projects: Project[] = [
+  {
+    id: '0024',
+    slug: 'redbull-3d-billboard',
+    year: '2026',
+    client: 'Red Bull',
+    title: '3D Billboard',
+    role: 'AD, Motion Designer',
+    tint: ['#a30418', '#1d3a8a'],
+    thumbnail: '/projects/redbull-billbooard/thumbnail.png',
+    hero: {
+      kind: 'image',
+      src: '/projects/redbull-billbooard/hero/Screenshot 2026-05-06 at 11.45.18.png',
+      aspect: '3632 / 1826',
+    },
+    planHero: {
+      src: '/projects/redbull-billbooard/planning/plan-hero.png',
+      width: 3616,
+      height: 1632,
+    },
+    // No `context` — the project blurb lives inside plan-hero.png.
+    phases: [
+      {
+        label: 'Planning',
+        columns: 2,
+        mobileColumns: 2,
+        images: [
+          { kind: 'image', src: '/projects/redbull-billbooard/planning/Screenshot 2025-10-01 at 8.24.40 PM-24095.png', width: 2350, height: 1666 },
+          { kind: 'image', src: '/projects/redbull-billbooard/planning/Screenshot 2026-05-06 at 11.29.00.png', width: 2438, height: 1214 },
+          { kind: 'image', src: '/projects/redbull-billbooard/planning/Screenshot 2026-05-06 at 11.29.30.png', width: 2358, height: 1160 },
+          { kind: 'image', src: '/projects/redbull-billbooard/planning/Screenshot 2026-05-06 at 11.42.37.png', width: 2890, height: 1334 },
+        ],
+      },
+      {
+        label: 'Concepting',
+        // Default desktop columns (3); mobile bumps to 2.
+        mobileColumns: 2,
+        images: [
+          { kind: 'image', src: '/projects/redbull-billbooard/concepting/Billboard_Scene_02.png', width: 2266, height: 1132 },
+          { kind: 'image', src: '/projects/redbull-billbooard/concepting/BubbleTest_0003.png', width: 1920, height: 959 },
+          { kind: 'image', src: '/projects/redbull-billbooard/concepting/Screenshot 2025-09-27 at 4.19.13 PM-24280.png', width: 2112, height: 1050 },
+          { kind: 'image', src: '/projects/redbull-billbooard/concepting/Screenshot 2025-09-27 at 7.37.00 PM-24461.png', width: 2110, height: 1050 },
+          { kind: 'mux', playbackId: '2WPJFE28f15HJm01i6F1h00aeEcrL1Os1Plw5i5TNhQ400', aspect: '16/9' },
+          { kind: 'image', src: '/projects/redbull-billbooard/concepting/Screenshot 2025-09-28 at 2.38.02 PM-24498.png', width: 2046, height: 1158 },
+          { kind: 'image', src: '/projects/redbull-billbooard/concepting/Screenshot 2025-09-28 at 3.37.08 PM-24517.png', width: 1558, height: 870 },
+          { kind: 'image', src: '/projects/redbull-billbooard/concepting/Screenshot 2025-09-28 at 4.07.59 PM-24290.png', width: 1540, height: 828 },
+          { kind: 'image', src: '/projects/redbull-billbooard/concepting/Screenshot 2025-09-28 at 8.51.35 PM-24479.png', width: 1562, height: 776 },
+          { kind: 'image', src: '/projects/redbull-billbooard/concepting/Screenshot 2025-09-28 at 9.28.47 PM-24399.png', width: 1546, height: 774 },
+        ],
+        // themain.png renders below the grid as its own full-width block.
+        trailing: [
+          { kind: 'image', src: '/projects/redbull-billbooard/concepting/themain.png', width: 1842, height: 1118 },
+        ],
+      },
+      {
+        label: 'Production',
+        columns: 2,
+        mobileColumns: 2,
+        images: [
+          { kind: 'mux', playbackId: 'aZOsoWEAlAarw1brFbOb8eN00XCMWkNhpEQ90100otasLA', aspect: '16/9' },
+          { kind: 'image', src: '/projects/redbull-billbooard/production/Screenshot 2025-10-01 at 4.09.31 PM-24700.png', width: 2824, height: 1408 },
+          { kind: 'image', src: '/projects/redbull-billbooard/production/Screenshot 2025-10-01 at 10.38.02 PM-24914.png', width: 2362, height: 1482 },
+          { kind: 'image', src: '/projects/redbull-billbooard/production/Screenshot 2025-10-01 at 10.38.34 PM-24908.png', width: 2350, height: 1486 },
+        ],
+        // After the grid: full-bleed Mux clip, then thefinal still.
+        trailing: [
+          { kind: 'mux', playbackId: 'jp8HjNd7P01CeS5901RVkwDRWIWUsGYF9vpHW7dmrM00tE', aspect: '16/9' },
+          { kind: 'image', src: '/projects/redbull-billbooard/production/thefinal.png', width: 2876, height: 1104 },
+        ],
+      },
+      {
+        label: 'Pixel Map Export',
+        // Single-mux phase — renders full-width via SingleVideo.
+        images: [
+          { kind: 'mux', playbackId: 'pTFcYeUnZFNMI7EFdfP6A55IpiDJyaS4W85JgtkgkHk', aspect: '16/9' },
+        ],
+      },
+    ],
+    // No passwordHash — public.
+  },
   {
     id: '0023',
     slug: 'apple-vision-pro',

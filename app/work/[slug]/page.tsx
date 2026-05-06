@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import Image from 'next/image';
+import type { Project } from '@/lib/projects';
 import { projects } from '@/lib/projects';
 import CaseStudyHero from '@/components/CaseStudyHero';
 import CaseStudyPhases from '@/components/CaseStudyPhases';
@@ -72,24 +74,28 @@ export default function WorkPage({ params }: { params: { slug: string } }) {
         />
       </section>
 
-      {/* Metadata + context (Swiss block on the left, paragraph on the right) */}
-      <section className="px-8 md:px-12 pt-12 grid grid-cols-1 md:grid-cols-12 gap-8">
-        <div className="md:col-span-5 mono">
-          <MetaRow label="Client" value={project.client} />
-          <MetaRow label="Year" value={project.year} />
-          <MetaRow label="Role" value={project.role} />
-          {project.studio && <MetaRow label="Studio" value={project.studio} />}
-          {project.scope && (
-            <MetaRow label="Scope" value={project.scope.join(' · ')} />
-          )}
-        </div>
-        <div
-          className="md:col-span-7 text-fg-90"
-          style={{ fontSize: 18, lineHeight: 1.5 }}
-        >
-          <Framing framing={project.context} />
-        </div>
-      </section>
+      {project.planHero ? (
+        <PlanHeroBlock project={project} />
+      ) : (
+        /* Standard metadata block + context paragraph */
+        <section className="px-8 md:px-12 pt-12 grid grid-cols-1 md:grid-cols-12 gap-8">
+          <div className="md:col-span-5 mono">
+            <MetaRow label="Client" value={project.client} />
+            <MetaRow label="Year" value={project.year} />
+            <MetaRow label="Role" value={project.role} />
+            {project.studio && <MetaRow label="Studio" value={project.studio} />}
+            {project.scope && (
+              <MetaRow label="Scope" value={project.scope.join(' · ')} />
+            )}
+          </div>
+          <div
+            className="md:col-span-7 text-fg-90"
+            style={{ fontSize: 18, lineHeight: 1.5 }}
+          >
+            <Framing framing={project.context} />
+          </div>
+        </section>
+      )}
 
       {/* Phases (gated when passwordHash is set) */}
       {project.phases && project.phases.length > 0 && (
@@ -123,6 +129,54 @@ export default function WorkPage({ params }: { params: { slug: string } }) {
         </section>
       )}
     </main>
+  );
+}
+
+/**
+ * Hero variant for projects whose intro copy is baked into a design
+ * image. Renders the image full-width at its intrinsic aspect ratio,
+ * with client/year/role overlaid in black on the top-left in a small
+ * mono table. Replaces the standard meta + context section.
+ */
+function PlanHeroBlock({ project }: { project: Project }) {
+  const ph = project.planHero!;
+  return (
+    <section className="px-8 md:px-12 pt-12">
+      <div
+        className="overflow-hidden relative shimmer"
+        style={{ aspectRatio: `${ph.width} / ${ph.height}` }}
+      >
+        <Image
+          src={ph.src}
+          alt={ph.alt ?? `${project.client} ${project.title}`}
+          fill
+          sizes="100vw"
+          className="object-cover"
+          priority
+        />
+        <div
+          className="absolute mono grid"
+          style={{
+            top: 'clamp(16px, 3vw, 32px)',
+            left: 'clamp(16px, 3vw, 32px)',
+            color: '#000',
+            fontSize: 'clamp(10px, 1.1vw, 12px)',
+            lineHeight: 1.55,
+            letterSpacing: '0.02em',
+            gridTemplateColumns: 'auto 1fr',
+            columnGap: '1rem',
+            rowGap: '2px',
+          }}
+        >
+          <span style={{ opacity: 0.55 }}>Client</span>
+          <span>{project.client}</span>
+          <span style={{ opacity: 0.55 }}>Year</span>
+          <span>{project.year}</span>
+          <span style={{ opacity: 0.55 }}>Role</span>
+          <span>{project.role}</span>
+        </div>
+      </div>
+    </section>
   );
 }
 
