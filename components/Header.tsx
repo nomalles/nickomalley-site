@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import { track } from '@vercel/analytics';
 import InfoModal from './InfoModal';
 import ComingSoonModal from './ComingSoonModal';
 
@@ -132,6 +133,7 @@ export default function Header({ fps, tris }: HeaderProps) {
               href="https://www.instagram.com/nomallez/"
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => track('instagram_click')}
               className="text-fg-55 hover-accent block"
             >
               Instagram
