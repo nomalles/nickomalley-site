@@ -110,24 +110,51 @@ observer, not continuous functions of scroll position (no parallax).
 
 ```
 app/
-  layout.tsx          — root, fonts, metadata
-  page.tsx            — homepage (just renders <Portfolio />)
-  globals.css         — all global styles, color utility classes, animations
+  layout.tsx                  — root, fonts + viewport meta, Vercel
+                                Analytics, persistent CustomCursor
+  page.tsx                    — homepage (renders <Portfolio />)
+  icon.svg                    — favicon ("no" in white on #0D0D0D)
+  globals.css                 — all global styles, color utility classes,
+                                animations, modal CSS, phase grid CSS
+  work/[slug]/page.tsx        — dynamic case study route, statically
+                                generated from projects.ts
 
 components/
-  Portfolio.tsx       — composition root, z-index stacking
-  Scene3D.tsx         — Three.js scene (client component)
-  Header.tsx          — fixed top header (role, time, links, stats)
-  BackgroundWordmark.tsx — giant NICK O'MALLEY type behind 3D
-  CustomCursor.tsx    — green dot cursor
-  ProjectList.tsx     — work list with hover thumbnail
+  Portfolio.tsx               — homepage composition root, z-index stack
+  Scene3D.tsx                 — homepage Three.js scene (trash/rocks scan)
+  Scene3DIcons.tsx            — case-study Three.js hero variant (no
+                                trails, no cube camera, texture-toggle
+                                on scan)
+  Header.tsx                  — fixed top header (role, time, nav,
+                                FPS/tri stats, Info+Scraps popup triggers)
+  BackgroundWordmark.tsx      — giant NICK O'MALLEY type behind 3D
+  CustomCursor.tsx            — green dot cursor (mounted at layout)
+  ProjectList.tsx             — homepage work list with hover thumbnail
+  CaseStudyHero.tsx           — case study hero dispatcher
+                                (mux / image / scene / youtube)
+  CaseStudyPhases.tsx         — phase blocks (grid, single-video,
+                                full-width trailing, password gate)
+  Framing.tsx                 — inline-text renderer (plain string OR
+                                segment array with links — internal
+                                #anchor or external new-tab)
+  YouTubeEmbed.tsx            — YouTube iframe with playback-mode helpers
+  InfoModal.tsx               — "About Nick" popup (portal at body)
+  ComingSoonModal.tsx         — generic small popup (Scraps placeholder)
 
 lib/
-  projects.ts         — single source of truth for project data
+  projects.ts                 — single source of truth for all project
+                                data, Media/Phase/Project types
+
+scripts/
+  measure-images.mjs          — CLI to print Media-shaped entries with
+                                width/height from a folder of images
 
 public/
-  scans/              — .glb photogrammetry assets
-  avatar/             — Nick's painted avatar art
+  hdri/forest.exr             — shared HDRI for both 3D scenes
+  scans/                      — .glb assets (Draco + 2K WebP compressed)
+  projects/<slug>/...         — case study images, GIFs, optional
+                                thumbnails / hero / phase subfolders
+  avatar/                     — Nick's painted avatar art (header)
 ```
 
 ### Z-index layering (do not change without thought)
@@ -194,9 +221,7 @@ This is the most complex component. Key facts:
   the `uShadowedEnvAmount` uniform — `1.0` = no extra darkening,
   `0.0` = pitch black in shadow. Currently `0.4`. This is what makes
   the trail shadows read; removing the injection brings them back to
-  invisible regardless of `key.intensity`. ACES filmic tone
-  mapping with `toneMappingExposure: 0.62` — tuned down from the previous
-  non-HDRI value so the photogrammetry texture doesn't blow out under IBL.
+  invisible regardless of `key.intensity`.
 - **Object group**: mesh + wireframe + trails are all children of a single
   `THREE.Group` so user drag rotates them together. Lights and cube camera
   stay in world space.
@@ -253,142 +278,374 @@ Three.js changed the color space API around r152 (`SRGBColorSpace`/
 feature detection so it works in both eras, but if you upgrade Three.js,
 double-check the conditional blocks in `Scene3D.tsx`.
 
+### Compressed scans (Draco + 2K WebP)
+
+The homepage GLBs were optimized via `gltf-transform optimize` with
+Draco mesh compression + 2K WebP texture re-encoding:
+- `trash_001.glb`: 94 MB → 2 MB
+- `rocks.glb`: 10 MB → 645 KB
+
+Both `Scene3D` and `Scene3DIcons` configure a `DRACOLoader` on their
+`GLTFLoader`, pointing at
+`https://www.gstatic.com/draco/versioned/decoders/1.5.6/`. The decoder
+WASM is cached cross-origin, so it loads once per browser. Non-Draco
+GLBs (currently `apple-3d-icons.glb`) still load through the same
+loader unchanged.
+
+To optimize a new scan:
+```
+npx -y @gltf-transform/cli@latest optimize input.glb output.glb \
+  --texture-compress webp --texture-size 2048 \
+  --compress draco --simplify false
+```
+
+`--simplify false` keeps mesh topology intact (only texture downsampling
++ Draco). Combined effect: visually identical at on-screen display size,
+~95% smaller payload.
+
+---
+
+## The case-study 3D scene (`Scene3DIcons.tsx`)
+
+Smaller cousin of `Scene3D`, used as a `kind: 'scene'` hero on projects
+that ship an interactive model (currently apple-3d-icons). Reuses the
+same HDRI lighting, ACES tone mapping, scan-line shader, and
+mouse/touch input model — but drops chrome trails and cube-camera
+reflections (lighter resource use).
+
+Two distinguishing features:
+
+1. **Sweep-driven texture transition**. The scan band does double duty:
+   as it crosses each pixel of the model, the mesh's shader transitions
+   that pixel's diffuse from the source texture to a darker reveal
+   (`vec3(0.12)`) and drops roughness to `0.08` so the HDRI shows up as
+   a glossy reflection. Two uniforms (`uOldIsGrey`, `uNewIsGrey`) toggle
+   on the rising / falling edges of each scan so every cycle reverses
+   direction. Wireframe shader and mesh shader share `uScanY` /
+   `uScanWidth` uniforms by reference so they sweep in lockstep.
+
+2. **Initial Z-axis roll** (`root.rotation.z = 0.18` rad, ~10°) so the
+   model doesn't sit perfectly upright. Auto-Y-rotation (0.28 rad/s,
+   slightly faster than `Scene3D`'s 0.18) layers on top.
+
+The hero wrapper (`.case-study-hero-scene`) is 21:9 on desktop but
+overrides to `4/5` portrait at `<= 768px` so the model has real estate
+on phones.
+
+A coral "↻ two-finger orbit" hint fades in/out over 3s on touch-only
+devices via `.touch-hint-3s` (separate from the homepage's 5.5s
+`.touch-hint`).
+
 ---
 
 ## Pages still to build
 
-- **`/scraps`** — personal/experimental work (Nick's IG-style stuff).
-  Should have a brief blurb at top explaining these are personal tests.
-  Denser masonry-ish grid, mixed aspect ratios. Each item gets a small mono
-  caption: format, year, tools (e.g. `scan / 2024 / polycam + r3f`).
-- **`/info`** — long-form about, client list, contact.
+- **`/scraps`** — currently a coming-soon popup (not a route).
+  Triggered from the header. Eventually: personal/experimental work
+  (Nick's IG-style stuff), denser masonry-ish grid, mixed aspect ratios,
+  small mono caption per item (`scan / 2024 / polycam + r3f`).
+- **`/info` was scoped, then dropped** — replaced with an in-place
+  `<InfoModal>` triggered from the header. If you want a bookmarkable
+  `/info` route later, build it as a server-rendered page; otherwise
+  the modal stays.
 
-The 3D scene is currently still mounted only inside the homepage `Portfolio`
-component. The intent is for the scan to remain persistent across `/work/*`,
-`/scraps`, and `/info` (likely shrunk to a corner viewport on inner pages),
-but the case study template ships standalone for now. To make Scene3D
-persist, hoist the canvas out of `Portfolio` into a shared layout (or into
-a top-level "scene root" component) so navigating between routes doesn't
-unmount/remount it. Don't re-implement that without thinking through it —
-remounting the GLB load and the cube-camera pipeline on every nav would be
-a noticeable hit.
+The 3D scene is currently still mounted only inside the homepage
+`Portfolio` component. The original intent was for the scan to remain
+persistent across `/work/*` and any future inner pages (likely shrunk
+to a corner viewport), but the case study template ships standalone
+for now. To make Scene3D persist, hoist the canvas out of `Portfolio`
+into a shared layout (or into a top-level "scene root" component) so
+navigating between routes doesn't unmount/remount it. Don't
+re-implement that without thinking through it — remounting the GLB
+load and the cube-camera pipeline on every nav would be a noticeable
+hit.
 
 ---
 
 ## Case study pages (`/work/[slug]`)
 
 Built. Lives at `app/work/[slug]/page.tsx`, statically generated via
-`generateStaticParams` from any project in `lib/projects.ts` that has a
-`hero` field. Slugs without a hero return 404.
+`generateStaticParams` from any project in `lib/projects.ts` that has
+a `hero` field. Slugs without a hero return 404.
 
-### Layout
+### Live case studies
+
+| Slug | Project | Year |
+|------|---------|------|
+| `redbull-3d-billboard` | Red Bull / 3D Billboard | 2026 |
+| `apple-vision-pro` | Apple / Vision Pro App Store | 2023-2025 |
+| `apple-app-store-awards` | Apple / App Store Awards | 2024 + 2025 |
+| `apple-3d-icons` | Apple / Apps + Games 3D Icons | 2022-2025 |
+| `pokemon-go-season-of-go` | Pokemon GO / Season of GO | 2022 |
+| `playstation-tournaments` | Playstation / Tournaments | 2021-2022 |
+| `warner-media-lobby` | WarnerMedia / Lobby Installation | 2019-2020 |
+| `twitch-rivals-broadcast` | Twitch / Twitch Rivals Broadcast | 2020-2021 |
+| `grammy-mono-to-immersive` | The Grammy Museum / Mono to Immersive | 2019 |
+
+The homepage list renders only projects with a `hero` field — no
+placeholder rows. The list order is determined by the order in
+`projects.ts`.
+
+### Default layout
 1. `← INDEX` back link (top-left, mono)
-2. Ultrawide (21:9) Mux player hero (`<CaseStudyHero>`)
-3. Two-column grid: Swiss-style metadata block (Client/Year/Role/Scope) on
-   the left, 2–3 sentence context paragraph on the right
-4. Phase blocks (`<CaseStudyPhases>`) — chronological stages, each with a
-   framing sentence + 3-column image grid with mixed aspect ratios.
-   Blurred behind a password gate when `passwordHash` is set.
-5. Small mono credits footer (team list + contribution notes)
+2. Hero — Mux / image / scene / YouTube (see Hero kinds below)
+3. **Either** Swiss meta block (Client / Year / Role [/ Studio /
+   Scope]) + context paragraph on the right, **or** a `planHero`
+   image with metadata overlaid in black on the top-left
+4. Phase blocks (`<CaseStudyPhases>`) — each with optional label,
+   framing, and grid; optionally gated by password
+5. Optional credits footer (team list + contribution notes)
 
-### Project data shape
-`lib/projects.ts` exports `Project` plus a `Media` discriminated union with
-three kinds:
-- `{ kind: 'mux', playbackId, aspect? }` — Mux video
-- `{ kind: 'image', src, aspect?, alt?, width?, height? }` — static image
-- `{ kind: 'scene', scanPath, aspect? }` — interactive Three.js hero,
-  currently rendered by `Scene3DIcons`
+### `Project` fields
 
-Plus `Phase` and `Credits` types. Case-study-specific fields (`hero`,
-`scope`, `context`, `phases`, `credits`, `passwordHash`) are all
-optional; projects without case study pages can stay slug-only.
+- `id` — unique short ID; controls list order via array position
+- `slug` — URL slug (`/work/<slug>`)
+- `client`, `title`, `year`, `role` — required metadata
+- `studio?` — production studio (renders "Studio" row in meta block)
+- `tint` — gradient fallback for hover thumbnail when no thumbnail set
+- `thumbnail?` — `/projects/<slug>/thumbnail.<ext>` path; replaces
+  the tint gradient card on the homepage hover
+- `hero?: Media` — presence determines whether a case study page is
+  generated
+- `planHero?: { src, width, height, alt? }` — secondary hero with
+  client/year/role overlaid in black on the top-left. When set, the
+  standard meta block + context section is suppressed (the project's
+  written intro is baked into the image)
+- `scope?: string[]` — renders "Scope" row in meta block, joined by `·`
+- `context?: string | FramingSegment[]` — top-of-page paragraph. Use
+  the segment array for inline links (`{ text, href }`), including
+  `#phase-<slug>` internal anchor links
+- `phases?: Phase[]`
+- `credits?: { team?: string[], notes?: string }`
+- `passwordHash?: string` — SHA-256 hex; gates the phases
 
-### Hero kinds
-- **Mux** (`kind: 'mux'`) — `<CaseStudyHero>` lazy-loads
-  `@mux/mux-player-react` and renders the player at the chosen aspect.
-  Default `21/9`, `--media-object-fit: cover` so 16:9 sources fill
-  ultrawide frames.
-- **Image** (`kind: 'image'`) — `<Image fill priority>` with
-  `sizes="100vw"`. Currently unused but kept type-honest.
-- **Scene** (`kind: 'scene'`) — interactive Three.js hero via
-  `<Scene3DIcons scanPath=...>`. Loads any GLB at `/scans/<file>.glb`,
-  auto-rotates, scan-line shader sweeps every 7.5s, and on each scan
-  completion **toggles the mesh material** between the source texture
-  and a neutral grey. No trails / no cube camera (lighter than the
-  homepage scene). Drag-to-orbit + two-finger touch input model
-  matches `Scene3D`.
+### `Media` kinds (discriminated union)
 
-### Phase media
-Phases accept any Media in their `images: Media[]` array. The renderer
-detects:
-- **Single Mux item** → renders full-width via `<SingleVideo>` (looks
-  better than a skinny video in one masonry column)
-- **Mixed or image-only** → CSS-columns masonry on `md+`, single-column
-  stack on mobile
+- `{ kind: 'mux', playbackId, aspect?, alt?, playback? }`
+  - `playback`: `'autoplay-muted-loop'` (default — silent ambient
+    looping) or `'user-with-sound'` (poster + play button, sound on,
+    no loop)
+- `{ kind: 'image', src, aspect?, alt?, width?, height?, fullBleed? }`
+  - `aspect` set → cell locked to that ratio + object-cover crop
+  - `aspect` omitted + `width`/`height` → natural aspect, no crop;
+    Next/Image reserves layout space and serves a responsive srcset
+  - `fullBleed` (**hero-only**) → no horizontal page padding,
+    edge-to-edge across the viewport
+  - `.gif` source → `unoptimized` passed to Next/Image so animation
+    passes through
+- `{ kind: 'scene', scanPath, aspect? }`
+  - Interactive Three.js hero rendered via `<Scene3DIcons>`
+- `{ kind: 'youtube', videoId, aspect?, playback? }`
+  - Embed via `<YouTubeEmbed>`. `playback`:
+    `'autoplay-muted-loop'` (default — `autoplay`, `mute`, `loop`,
+    `controls=0`) or `'user'` (poster + manual play, normal controls)
+  - `vq=hd1080` URL hint set on all embeds (best-effort starting
+    quality)
+  - `loading="lazy"` so off-screen embeds don't pull YT player JS
+
+### `Phase` fields
+
+- `label?: string | null`
+  - `string` → use it
+  - `undefined` → auto-fall-back to "Phase 01" / "Phase 02" only when
+    at least one other phase on the project has a string label or
+    framing (structured project)
+  - `null` (explicit) → render no heading; useful for continuation
+    phases that visually attach to a previous labeled section
+- `framing?: string | FramingSegment[]` — optional intro paragraph
+  with inline-link support (same shape as `context`)
+- `images: Media[]` — grid content
+- `columns?: number` — desktop masonry column count (default 3)
+- `mobileColumns?: number` — mobile column count (default 1 = stack).
+  Set to 2 for grids that read better as 2-up on phones
+- `trailing?: Media[]` — array of full-width blocks rendered below the
+  grid, each at its natural aspect. Used for "concluding" media after
+  a grid (e.g. a final hero still, a full-bleed video punctuating a
+  section). Mux/YouTube/image dispatch through `FullWidthMedia`
+
+### Phase rendering rules
+
+- **Single-video phase** (one item, `kind: 'mux'` or `'youtube'`) →
+  renders full-width via `<SingleVideo>` / YouTube wrapper instead of
+  a skinny 1-cell grid column
+- **Mixed / image-only phase** → CSS-columns masonry. Column count
+  driven by `--phase-cols` (desktop, default 3) and
+  `--phase-cols-mobile` (default 1) custom properties. Per-phase
+  overrides via `columns` / `mobileColumns` are emitted as inline
+  CSS variables on the wrapper.
+- **Trailing media** → each item rendered via `<FullWidthMedia>` below
+  the grid at its natural aspect. Image items get the same
+  `.shimmer` loading state as grid cells.
+- **`#phase-<label-slug>`** id auto-generated from `phase.label`
+  (e.g. `"Tool"` → `id="phase-tool"`), with `scrollMarginTop: 90` so
+  in-page anchor jumps land below the fixed header.
+
+### "The Work" header + auto phase numbering
+Both render only when at least one phase has a string label or
+framing. Flat-content projects (visual blocks with no copy) get neither
+the section heading nor auto "Phase NN" numbering.
 
 ### Image optimization
-All case study images render through Next/Image. Two modes per cell:
-- **`aspect` set** → cell locked to that ratio, image fills via
-  `<Image fill>` + `object-cover` (will crop). Use for uniform tile
-  grids.
-- **`aspect` omitted** → cell takes the image's natural height; no crop.
-  Requires `width` and `height` on the Media so Next can reserve
-  layout space and pick the right size from the responsive srcset.
 
-Source files live uncompressed in `public/projects/<slug>/...`; Vercel
-generates WebP/AVIF at responsive sizes on first request and caches at
-the edge. The `sizes` prop on each cell is `(max-width: 768px) 100vw,
-33vw` to match the 3-col grid.
+All case study images render through Next/Image. Source files live
+uncompressed in `public/projects/<slug>/...`; Vercel generates WebP /
+AVIF at responsive sizes on first request and caches at the edge.
+Default `sizes="(max-width: 768px) 100vw, 33vw"` for grid cells.
 
-For each new project:
-1. Drop image files under `public/projects/<slug>/phase-N/` (any
-   filename — non-ASCII characters like U+202F from macOS Screenshot
-   should be normalized to ASCII first).
-2. Run `node scripts/measure-images.mjs public/projects/<slug>/phase-N`
-   to print Media-shaped entries (`{ kind: 'image', src, width, height }`)
-   ready to paste into the project's `phases[].images` array.
-3. Commit the images and the updated `lib/projects.ts`.
+Animated `.gif` sources get `unoptimized: true` (the optimizer strips
+animation otherwise). PNGs and JPGs get full responsive optimization.
+
+### Adding a new project
+
+1. Drop assets under `public/projects/<slug>/...`. Subfolder shape
+   is free-form; use whatever organization fits the project.
+2. Run `node scripts/measure-images.mjs <folder>` per image directory
+   to print Media entries with width/height filled in.
+3. Add the project entry to `lib/projects.ts` with `hero`, `phases`,
+   etc.
+4. Commit images + `projects.ts`.
+
+### Filename normalization
+
+macOS Screenshot files contain `U+202F` (narrow no-break space) between
+the time and AM/PM. Renders identical to ASCII space but is a
+different byte sequence; case-sensitive deployments (Vercel/Linux)
+won't resolve paths that use a regular space. Normalize before
+referencing — use an explicit ` ` escape (source-level
+`' '` → `' '` in a heredoc has silently failed for me when both
+chars rendered the same in the editor):
+
+```python
+python3 -c "
+import os
+for r, d, fs in os.walk('public/projects/<slug>'):
+    for f in fs:
+        if ' ' in f:
+            os.rename(os.path.join(r, f),
+                      os.path.join(r, f.replace(' ', ' ')))
+"
+```
 
 ### Mux integration
-- **Library**: `@mux/mux-player-react` (installed). Lazy-loaded via
-  `next/dynamic` with `ssr: false` because the player is a web component
-  that needs `customElements`.
-- **Playback IDs are public** — they live in `lib/projects.ts` directly
-  (`hero.playbackId`). Don't put them in env vars.
-- **API tokens** (`MUX_TOKEN_ID` / `MUX_TOKEN_SECRET`) live in `.env.local`
-  (server-only, never `NEXT_PUBLIC_`-prefixed). Used for upload scripts
-  and asset queries — not for serving public videos.
-- Hero player is autoPlay + muted + loop + playsInline + nohotkeys, with
-  `onContextMenu` suppressed to hide the "Save Video As" menu. Determined
-  viewers can still grab the HLS stream from the network tab — this is
-  friction, not protection.
-- Uploads currently go through the Mux dashboard. If we add a CLI helper
-  later, drop it at `scripts/upload-mux.ts` and use the API token pair.
+- **Library**: `@mux/mux-player-react`. Lazy-loaded via `next/dynamic`
+  with `ssr: false` because the player is a web component that needs
+  `customElements`.
+- **Playback IDs are public** — they live in `lib/projects.ts` directly.
+- **API tokens** (`MUX_TOKEN_ID` / `MUX_TOKEN_SECRET`) live in
+  `.env.local` (server-only, never `NEXT_PUBLIC_`-prefixed). Used for
+  upload scripts and asset queries — not for serving public videos.
+- Default hero player: `autoPlay="muted" muted loop playsInline
+  nohotkeys`, with `onContextMenu` suppressed.
+- Hero `--media-object-fit: cover` on the wrapper so 16:9 sources
+  fill 21:9 ultrawide frames (with ~15% top/bottom crop).
+- Uploads go through the Mux dashboard.
+
+### YouTube integration
+
+`<YouTubeEmbed>` wraps the iframe. URL params set per `playback` mode:
+- `autoplay-muted-loop`: `autoplay=1 mute=1 loop=1 playlist=<id>
+  controls=0 modestbranding=1 playsinline=1 rel=0 vq=hd1080`
+- `user`: `modestbranding=1 rel=0 vq=hd1080` (no autoplay)
+
+The `playlist=<id>` is YouTube's quirk for looping a single video.
+`vq=hd1080` is unofficial but historically respected as a starting-
+quality hint.
 
 ### Password-gate pattern (`<CaseStudyPhases>`)
-- The phases stack is wrapped in `.phase-gate`, which is `filter: blur(24px)`
-  + `pointer-events: none` + `user-select: none` until `.unlocked` is added.
-  Filter transitions over 600ms cubic-bezier(0.65, 0, 0.35, 1) — the site's
-  canonical state-change easing.
-- Comparison is **client-side SHA-256** of the input vs `passwordHash` from
-  `projects.ts`. Use Web Crypto (`crypto.subtle.digest`) — no library.
-- Generate a hash with:
+
+- Phases are wrapped in `.phase-gate`: `filter: blur(24px)` +
+  `pointer-events: none` + `user-select: none` until `.unlocked` is
+  added. Filter transitions over 600ms cubic-bezier(0.65, 0, 0.35, 1).
+- Comparison: client-side SHA-256 (Web Crypto `crypto.subtle.digest`)
+  of the input vs `passwordHash`.
+- Generate a hash:
   ```
   node -e "console.log(require('crypto').createHash('sha256').update('YOURPASSWORD').digest('hex'))"
   ```
-  Or `echo -n "YOURPASSWORD" | shasum -a 256` on macOS.
-- **Unlock state is persisted to `sessionStorage`** under a single shared
-  key `phase-gate-hash`, with the *unlocked password's hash* as the value.
-  On mount, each project compares its own `passwordHash` against the
-  stored value — if they match, it auto-unlocks. Effect: projects sharing
-  the same password unlock together once any one is opened; projects with
-  a different password still need their own unlock. Closing the tab
-  forgets it.
-- This is **polite gating, not security**. The hash is in the bundle and
-  brute-forceable for weak passwords; the playback URL is still extractable
-  from the network tab. Don't use this for anything that genuinely needs
-  to stay private — for that we'd switch the videos to Mux signed playback
-  + server-side JWT minting, and serve the page itself behind real auth.
+- **Unlock state in `sessionStorage`** under shared key
+  `phase-gate-hash`, with the *unlocked password's hash* as the value.
+  Projects sharing the same hash auto-unlock together. Different
+  hashes need their own unlock. Tab close forgets.
+- **Current shared password is `nickwork`.** Three projects use it
+  (Vision Pro, App Store Awards, 3D Icons). The other case studies
+  are public.
+- This is **polite gating, not security**. The hash is in the bundle
+  and brute-forceable for weak passwords; HLS streams are extractable
+  from devtools. For genuine privacy, switch to Mux signed playback
+  + server-side JWT minting + real auth on the page.
+
+### Inline-text rendering (`<Framing>`)
+
+Shared component used for both `context` (project) and `framing`
+(phase). Accepts `string | FramingSegment[] | undefined`:
+- Plain string → renders as-is
+- Segment array → mapped, with `{ text, href }` entries becoming
+  anchors:
+  - `href` starting with `#` → in-page anchor link, no
+    `target="_blank"`, glides via the global `scroll-behavior: smooth`
+  - Otherwise → external link with `target="_blank"
+    rel="noopener noreferrer"`
+- Underlined, hover-accent color for both modes
+
+Example (3D Icons context):
+```ts
+context: [
+  'In my time at Apple, I created a 3D icon model and guidelines... including an ',
+  { text: 'internal tool', href: '#phase-tool' },
+  ' for teams...',
+]
+```
+
+---
+
+---
+
+## Modals (`InfoModal`, `ComingSoonModal`)
+
+Two popups triggered from the header. Both render at `document.body`
+via `createPortal` so they escape the Header's `pointer-events: none`
+wrapper (otherwise the X button and backdrop click would silently
+fail — that bug bit once already). Share modal CSS in `globals.css`:
+
+- `.info-modal-backdrop` — full-screen, `rgba(0,0,0,0.85)` +
+  `backdrop-filter: blur(8px)`, fades in over 200ms
+- `.info-modal` — centered panel, max-width 760px, scales in on mount
+- `.coming-soon-modal` — narrower variant (max-width 420px) on top of
+  `.info-modal`
+
+Close behaviors (both modals): X button, backdrop click, Escape key.
+While open, body scroll is locked via `document.body.style.overflow`.
+
+- **`<InfoModal>`** — "About Nick" with photo (`public/projects/info-pic.png`)
+  + bio + mailto link. Triggered by clicking "Info" in the header.
+  Replaces what would have been an `/info` route.
+- **`<ComingSoonModal>`** — generic small popup taking `label` +
+  `message` props. Wired to the header's Scraps link with
+  `label="Scraps"`, `message="coming soon :)"`.
+
+---
+
+## Live site
+
+- **Domain**: `nickomalley.net` — registered at Namecheap, DNS at
+  Namecheap PremiumDNS (Wix nameservers fully out of the loop).
+  Records:
+  - A (apex): `76.76.21.21`
+  - CNAME (`www`): `cname.vercel-dns.com.`
+- **Deployment**: Vercel auto-deploys every push to `main`.
+- **Analytics**: Vercel Analytics (`@vercel/analytics`). Cookieless —
+  no consent banner needed for EU/UK. Mounted at root layout. View
+  data at vercel.com → project → Analytics.
+  - **Custom event**: header Instagram link fires
+    `track('instagram_click')` on click. Easy pattern to extend for
+    any other CTA: `onClick={() => track('event_name', { meta })}`.
+  - **About bot hits on weird paths** (e.g. `/admin`): expected — the
+    `<Analytics />` component fires on every route including 404s, so
+    automated scanners probing common admin URLs show up as page
+    views. Not real visitors.
+- **Favicon**: `app/icon.svg` — "no" in white on `#0D0D0D`. Next 14
+  App Router auto-wires `<link rel="icon">`. No `apple-icon.png` yet
+  — iOS "Add to Home Screen" falls back to the SVG.
 
 ---
 
@@ -416,29 +673,41 @@ These came up in conversation and were rejected. Don't re-suggest:
 
 ## Things that are fair game
 
-- Adding new projects to `lib/projects.ts`
-- Building out `/work/[slug]`, `/scraps`, `/info` pages following the design system
+- Adding new projects to `lib/projects.ts` (data only)
+- Adding new media kinds or Phase fields when a project needs a layout
+  the existing template can't express — prefer extending the data model
+  over special-casing inside components
+- Building out `/scraps` whenever Nick is ready (currently a popup)
 - Performance optimizations within the existing visual budget
-- Accessibility improvements (the custom cursor and dark theme need careful
-  thought here — don't break keyboard navigation)
-- Swapping `trash_001.glb` for an updated scan
+- Accessibility improvements (the custom cursor and dark theme need
+  careful thought here — don't break keyboard navigation)
+- Swapping any scan for an updated one (run it through gltf-transform
+  optimize first if it's heavy)
 - Refactoring without changing visual output
+- Wiring new Vercel Analytics custom events on CTAs
 
 ---
 
 ## Stack notes
 
-- **Next.js 14 App Router** — server components by default, `'use client'` only
-  where needed (the 3D scene, header time, cursor, project hover state)
+- **Next.js 14 App Router** — server components by default,
+  `'use client'` only where needed (the 3D scenes, modals, header
+  time, custom cursor, project list hover state, case study renderer)
 - **TypeScript strict mode** — all new code typed
-- **Tailwind** — used for layout primitives (flex, grid, spacing). Color and
-  typography use the explicit CSS classes in `globals.css` because Tailwind's
-  arbitrary-value syntax with opacity (`text-[#F4F2EE]/45`) was unreliable
-  in some build contexts. Stick with the `text-fg-XX` and `text-accent-XX`
-  utility classes.
-- **Three.js (~r165)** — bare three, not React Three Fiber. The scene is
-  imperative on purpose; R3F adds reconciliation overhead that isn't worth
-  it for a single hand-crafted scene.
+- **Tailwind** — used for layout primitives (flex, grid, spacing).
+  Color and typography use the explicit CSS classes in `globals.css`
+  because Tailwind's arbitrary-value-with-opacity syntax
+  (`text-[#F4F2EE]/45`) was unreliable in some build contexts. Stick
+  with `text-fg-XX` and `text-accent-XX`
+- **Three.js (~r165)** — bare three, not React Three Fiber.
+  Imperative scenes; R3F's reconciliation overhead isn't worth it
+  for hand-crafted scenes
+- **`@mux/mux-player-react`** — Mux hero / inline video playback
+- **`@vercel/analytics`** — page views + custom events (`track()`)
+- **`@next/third-parties`** was used briefly for Google Analytics
+  then removed — current analytics is Vercel-only
+- **`gltf-transform`** — invoked via `npx -y @gltf-transform/cli@latest`
+  for scan compression (not a permanent dependency)
 
 ---
 
